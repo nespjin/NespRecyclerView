@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">@color/colorPrimaryNesp</color>
+    <color name="colorPrimaryDark">@color/colorPrimaryDarkNesp</color>
+    <color name="colorAccent">#D81B60</color>
+
+    <!--Nesp standard colors-->
+    <color name="colorPrimaryNesp">#007aff</color>
+    <color name="colorPrimaryDarkNesp">#0259b9</color>
+    <color name="colorWhite">#ffffff</color>
+</resources>

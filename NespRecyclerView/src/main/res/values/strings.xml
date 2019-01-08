@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">NespRecyclerView</string>
+    <string name="nesprecyclerview_text_loading_more">loading....</string>
+    <string name="nesprecyclerview_text_load_more_failed">Load failed(Click to load again)</string>
+    <string name="nesprecyclerview_text_no_more_data">No more data!</string>
+    <string name="nesprecyclerview_text_pull_down">Pull down to refresh</string>
+    <string name="nesprecyclerview_text_up_to_refresh">Release immediate refresh</string>
+    <string name="nesprecyclerview_text_refreshing">Refreshing</string>
+    <string name="nesprecyclerview_text_refresh_success">Refresh successfully</string>
+    <string name="nesprecyclerview_text_refresh_failed">Refresh failed</string>
+</resources>

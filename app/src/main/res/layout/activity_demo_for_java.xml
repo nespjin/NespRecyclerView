@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        tools:context=".ui.activity.DemoForJavaActivity">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <com.nesp.sdk.android.widget.NespRecyclerView
+                android:id="@+id/activity_nrcv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:loadMoreBackgroundColor="#f9f9f9"
+                app:hideNoMoreData="false"
+                app:loadMoreProgressIndeterminateDrawable="@drawable/loading"
+                app:noMoreDataText="No more data"
+                app:loadMoreFailedText="load failed(Click to reload)"
+                app:loadMoreTextColor="@color/colorPrimary"
+                app:loadingMoreText="loading"
+                app:loadMoreTextSize="5sp"
+                app:refreshProgressIndeterminateDrawableTintColor="@color/colorWhite"
+                app:refreshProgressIndeterminateDrawable="@drawable/loading"
+                app:refreshTextColor="@color/colorWhite"
+                app:refreshArrowTintColor="@color/colorWhite"
+                app:refreshArrowDrawable="@drawable/ic_arrow"
+                app:refreshTextSize="6sp"
+                app:refreshBackgroundColor="#999999"
+                app:refreshFailedText="Refresh failed"
+                app:refreshSuccessText="Refresh success"
+                app:refreshingText="Refreshing"
+                app:upToRefreshText="Release to refresh"
+                app:pullDownText="Pull down to refresh"/>
+
+    </LinearLayout>
+
+    <ProgressBar
+            android:id="@+id/activity_pb"
+            android:visibility="gone"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+
+</RelativeLayout>

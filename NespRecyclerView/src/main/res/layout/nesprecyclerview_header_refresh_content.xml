@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent">
+
+    <LinearLayout
+            android:id="@+id/nrv_header_refresh_root"
+            android:layout_width="match_parent"
+            android:gravity="center_horizontal|bottom"
+            android:layout_height="1dp"
+            android:orientation="horizontal">
+
+        <RelativeLayout
+                android:background="@null"
+                android:paddingBottom="10dp"
+                android:paddingTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <ImageView
+                    android:id="@+id/nrv_header_refresh_iv"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/nrv_header_refresh_tv"
+                    android:layout_width="wrap_content"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_nesprecyclerview_arrow_down"/>
+
+            <ProgressBar
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/nrv_header_refresh_tv"
+                    android:layout_marginStart="60dp"
+                    android:id="@+id/nrv_header_refresh_pb"
+                    android:visibility="gone"
+                    style="?android:progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminateOnly="true"/>
+
+            <TextView
+                    android:text="Loading"
+                    android:layout_marginStart="10dp"
+                    android:layout_centerInParent="true"
+                    android:background="@null"
+                    android:id="@+id/nrv_header_refresh_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"/>
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+</LinearLayout>

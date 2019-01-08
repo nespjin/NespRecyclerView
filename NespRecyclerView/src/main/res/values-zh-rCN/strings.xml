@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NespRecyclerView</string>
+    <string name="nesprecyclerview_text_loading_more">正在加载....</string>
+    <string name="nesprecyclerview_text_load_more_failed">加载失败</string>
+    <string name="nesprecyclerview_text_no_more_data">已经到底了!</string>
+    <string name="nesprecyclerview_text_pull_down">下拉刷新</string>
+    <string name="nesprecyclerview_text_up_to_refresh">释放立即刷新</string>
+    <string name="nesprecyclerview_text_refreshing">正在刷新</string>
+    <string name="nesprecyclerview_text_refresh_success">刷新成功</string>
+    <string name="nesprecyclerview_text_refresh_failed">刷新失败</string>
+</resources>
