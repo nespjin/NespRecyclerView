@@ -1,12 +1,30 @@
+/*
+ *
+ * Copyright (c) 2019 NESP Technology Corporation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 3, as published by the Free Software Foundation.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License.See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * If you have any questions or if you find a bug,
+ * please contact the author by email or ask for Issues.
+ *
+ * Author:JinZhaolu <1756404649@qq.com>
+ *
+ */
+
 package com.nesp.demo.nesprecyclerviewdemo.ui.activity;
 
-import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import androidx.annotation.ColorInt;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -27,7 +45,7 @@ import java.util.List;
  * @time: Created 19-1-1 下午4:45
  * @project NespRecyclerViewDemo
  **/
-public class DemoForJavaActivity extends BaseActivity implements ILoadDataVIew {
+public class DemoForJavaActivity extends BaseActivity implements ILoadDataVIew, Thread.UncaughtExceptionHandler {
 
     private static final String TAG = "DemoForJavaActivity";
 
@@ -57,8 +75,8 @@ public class DemoForJavaActivity extends BaseActivity implements ILoadDataVIew {
         StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(context, 3);
         recyclerViewAdapter = new RecyclerViewAdapter(context, dataModelList);
+        nespRecyclerView.setLayoutManager(gridLayoutManager);
         nespRecyclerView.setAdapter(recyclerViewAdapter);
-        nespRecyclerView.setLayoutManager(linearLayoutManager);
         nespRecyclerView
                 .setOnRefreshListener(() -> iLoadDataPresenter.refresh())
                 // Set Content Item Click Listener
@@ -152,5 +170,11 @@ public class DemoForJavaActivity extends BaseActivity implements ILoadDataVIew {
 
     private void showProgressBar() {
         progressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+       Log.e(TAG,"DemoForJavaActivity.uncaughtException: e \n" +e);
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 }

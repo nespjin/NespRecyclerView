@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~
+  ~ Copyright (c) 2019 NESP Technology Corporation. All rights reserved.
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms and conditions of the GNU General Public License,
+  ~ version 3, as published by the Free Software Foundation.
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License.See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ If you have any questions or if you find a bug,
+  ~ please contact the author by email or ask for Issues.
+  ~
+  ~ Author:JinZhaolu <1756404649@qq.com>
+  ~
+  -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools" package="com.nesp.demo.nesprecyclerviewdemo">
 
@@ -10,15 +29,17 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme" tools:ignore="GoogleAppIndexingWarning">
         <activity android:name="com.nesp.demo.nesprecyclerviewdemo.ui.activity.MainActivity">
+
+        </activity>
+
+        <activity
+                android:name="com.nesp.demo.nesprecyclerviewdemo.ui.activity.DemoForJavaActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
-        <activity
-                android:name="com.nesp.demo.nesprecyclerviewdemo.ui.activity.DemoForJavaActivity"/>
 
         <activity android:name="com.nesp.demo.nesprecyclerviewdemo.ui.activity.BaseActivity"/>
     </application>

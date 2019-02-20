@@ -1,3 +1,22 @@
+/*
+ *
+ * Copyright (c) 2019 NESP Technology Corporation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 3, as published by the Free Software Foundation.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License.See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * If you have any questions or if you find a bug,
+ * please contact the author by email or ask for Issues.
+ *
+ * Author:JinZhaolu <1756404649@qq.com>
+ *
+ */
+
 package com.nesp.sdk.android.widget;
 
 import android.animation.ValueAnimator;
@@ -461,8 +480,9 @@ public class NespRecyclerView extends RecyclerView {
      */
     @Override
     public void setLayoutManager(@Nullable LayoutManager layoutManager) {
-        if (nespRecyclerViewAdapter != null)
+        if (nespRecyclerViewAdapter != null) {
             nespRecyclerViewAdapter.adaptLayoutManager(layoutManager);
+        }
         super.setLayoutManager(layoutManager);
     }
 
@@ -1726,6 +1746,7 @@ public class NespRecyclerView extends RecyclerView {
                     StaggeredGridLayoutManager.LayoutParams p = (StaggeredGridLayoutManager.LayoutParams) layoutParams;
                     p.setFullSpan(true);//占满一行
                 }
+
             }
         }
 
@@ -1740,8 +1761,6 @@ public class NespRecyclerView extends RecyclerView {
 
             final RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
 
-            if (layoutManager == null) return;
-
             adaptLayoutManager(layoutManager);
         }
 
@@ -1752,34 +1771,54 @@ public class NespRecyclerView extends RecyclerView {
          * @see #setLayoutManager(LayoutManager)
          */
         void adaptLayoutManager(LayoutManager layoutManager) {
-            if (layoutManager instanceof GridLayoutManager) {
+            if (layoutManager == null || !(layoutManager instanceof GridLayoutManager)) return;
 
-                ((GridLayoutManager) layoutManager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                    @Override
-                    public int getSpanSize(int position) {
 
-                        if (refreshHeaderView != null && position == 0) {
-                            return ((GridLayoutManager) layoutManager).getSpanCount();
-                        }
-                        if (headerView != null && position == (refreshHeaderView == null ? 0 : 1)) {
-                            return ((GridLayoutManager) layoutManager).getSpanCount();
-                        }
+            ((GridLayoutManager) layoutManager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    int type = getItemViewType(position);
 
-                        if (footerView != null && position == getLoadMorePosition() + 1) {
-                            return ((GridLayoutManager) layoutManager).getSpanCount();
-                        }
-
-                        if (position == getLoadMorePosition()) {
-                            return ((GridLayoutManager) layoutManager).getSpanCount();
-                        }
-
-                        if (emptyView != null && getOriginAdapter().getItemCount() == 0) {
-                            return ((GridLayoutManager) layoutManager).getSpanCount();
-                        }
-                        return 1;
+                    if (type == ITEM_TYPE_REFRESH_HEADER
+                            || type == ITEM_TYPE_HEADER
+                            || type == ITEM_TYPE_FOOTER
+                            || type == ITEM_TYPE_EMPTY
+                            || type == ITEM_TYPE_LOAD_MORE) {
+                        return ((GridLayoutManager) layoutManager).getSpanCount();
                     }
-                });
-            }
+
+
+//                        Log.e(TAG, "NespRecyclerViewAdapter.getSpanSize: ((GridLayoutManager) layoutManager).getSpanCount()" + ((GridLayoutManager) layoutManager).getSpanCount());
+//
+//                        if (refreshHeaderView != null && position == 0) {
+//                            Log.e(TAG, "NespRecyclerViewAdapter.getSpanSize: 1 " + 1);
+//                            return ((GridLayoutManager) layoutManager).getSpanCount();
+//                        }
+//
+//                        if (headerView != null && position == (refreshHeaderView == null ? 0 : 1)) {
+//                            Log.e(TAG, "NespRecyclerViewAdapter.getSpanSize: 2 " + 2);
+//                            return ((GridLayoutManager) layoutManager).getSpanCount();
+//                        }
+//
+//                        if (footerView != null && position == getLoadMorePosition() + 1) {
+//                            Log.e(TAG, "NespRecyclerViewAdapter.getSpanSize: 3 " + 3);
+//                            return ((GridLayoutManager) layoutManager).getSpanCount();
+//                        }
+//
+//                        if (position == getLoadMorePosition()) {
+//                            Log.e(TAG, "NespRecyclerViewAdapter.getSpanSize: 4 " + 4);
+//                            return ((GridLayoutManager) layoutManager).getSpanCount();
+//                        }
+//
+//                        if (emptyView != null && getOriginAdapter().getItemCount() == 0) {
+//                            Log.e(TAG, "NespRecyclerViewAdapter.getSpanSize: 5 " + 5);
+//                            return ((GridLayoutManager) layoutManager).getSpanCount();
+//                        }
+
+                    return 1;
+                }
+            });
+
         }
 
         /**
@@ -1860,5 +1899,4 @@ public class NespRecyclerView extends RecyclerView {
         rotateAnimation.setDuration(500);
         view.startAnimation(rotateAnimation);
     }
-
 }

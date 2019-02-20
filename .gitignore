@@ -1,6 +1,7 @@
 # Java Doc
 javadoc/
 #
+README.md
 # Built application files
 *.apk
 *.ap_
