@@ -39,7 +39,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import androidx.annotation.*;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
+import androidx.annotation.DimenRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -273,6 +281,7 @@ public class NespRecyclerView extends RecyclerView {
         /*
          *  Add the customize of loadMoreView from layout
          */
+        loadMoreEnable = typedArray.getBoolean(R.styleable.NespRecyclerView_loadMoreEnable, false);
         isHideNoMoreData = typedArray.getBoolean(R.styleable.NespRecyclerView_hideNoMoreData, false);
         loadMoreTextColor = typedArray.getColor(R.styleable.NespRecyclerView_loadMoreTextColor, Color.GRAY);
         loadMoreTextSize = typedArray.getDimensionPixelSize(R.styleable.NespRecyclerView_loadMoreTextSize, getResources().getDimensionPixelSize(R.dimen.load_more_text_size));
@@ -303,6 +312,7 @@ public class NespRecyclerView extends RecyclerView {
         /*
          *  Add the customize of refresh from layout
          */
+        isRefreshEnable = typedArray.getBoolean(R.styleable.NespRecyclerView_refreshEnable, true);
         pullDownText = typedArray.getString(R.styleable.NespRecyclerView_pullDownText);
         upToRefreshText = typedArray.getString(R.styleable.NespRecyclerView_upToRefreshText);
         refreshingText = typedArray.getString(R.styleable.NespRecyclerView_refreshingText);
@@ -1682,7 +1692,7 @@ public class NespRecyclerView extends RecyclerView {
                 return itemCount;
             }
             //Add LoadMoreView
-            if (loadMoreState != LoadMoreState.LOAD_NOT) itemCount++;
+            if (loadMoreState != LoadMoreState.LOAD_NOT && loadMoreEnable) itemCount++;
             return itemCount;
         }
 
@@ -1693,12 +1703,15 @@ public class NespRecyclerView extends RecyclerView {
              * The order of the view is very important to be cautiously modified, otherwise it will be confused and return wrong type.
              */
             if (position == 0) return ITEM_TYPE_REFRESH_HEADER;
-            if (headerView != null && position == (refreshHeaderView == null ? 0 : 1)) return ITEM_TYPE_HEADER;
+            if (headerView != null && position == (refreshHeaderView == null ? 0 : 1))
+                return ITEM_TYPE_HEADER;
             if (footerView != null && position == getItemCount() - 1) return ITEM_TYPE_FOOTER;
             if (emptyView != null && originAdapter.getItemCount() == 0) {
                 //If the content data is empty,no need to add LoadMoreView
                 return ITEM_TYPE_EMPTY;
-            } else if (loadMoreState != LoadMoreState.LOAD_NOT && position == getLoadMorePosition()) {
+            } else if (loadMoreState != LoadMoreState.LOAD_NOT
+                    && position == getLoadMorePosition()
+                    && loadMoreEnable) {
                 return ITEM_TYPE_LOAD_MORE;
             }
             return ITEM_TYPE_NORMAL;
@@ -1746,7 +1759,6 @@ public class NespRecyclerView extends RecyclerView {
                     StaggeredGridLayoutManager.LayoutParams p = (StaggeredGridLayoutManager.LayoutParams) layoutParams;
                     p.setFullSpan(true);//占满一行
                 }
-
             }
         }
 
@@ -1771,8 +1783,7 @@ public class NespRecyclerView extends RecyclerView {
          * @see #setLayoutManager(LayoutManager)
          */
         void adaptLayoutManager(LayoutManager layoutManager) {
-            if (layoutManager == null || !(layoutManager instanceof GridLayoutManager)) return;
-
+            if (!(layoutManager instanceof GridLayoutManager)) return;
 
             ((GridLayoutManager) layoutManager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
                 @Override

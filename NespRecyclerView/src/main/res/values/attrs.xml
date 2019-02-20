@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~
   ~ Copyright (c) 2019 NESP Technology Corporation. All rights reserved.
   ~
@@ -22,31 +21,33 @@
 
     <declare-styleable name="NespRecyclerView">
         <!--=========================Load more=============================-->
-        <attr name="hideNoMoreData" format="boolean"/>
-        <attr name="loadMoreTextColor" format="color|reference"/>
-        <attr name="loadMoreTextSize" format="dimension"/>
-        <attr name="noMoreDataText" format="string|reference"/>
-        <attr name="loadingMoreText" format="string|reference"/>
-        <attr name="loadMoreFailedText" format="string|reference"/>
-        <attr name="loadMoreBackgroundColor" format="color|reference"/>
-        <attr name="loadMoreProgressIndeterminateDrawable" format="reference"/>
-        <attr name="loadMoreProgressIndeterminateDrawableTintColor" format="color|reference"/>
+        <attr name="loadMoreEnable" format="boolean" />
+        <attr name="hideNoMoreData" format="boolean" />
+        <attr name="loadMoreTextColor" format="color|reference" />
+        <attr name="loadMoreTextSize" format="dimension" />
+        <attr name="noMoreDataText" format="string|reference" />
+        <attr name="loadingMoreText" format="string|reference" />
+        <attr name="loadMoreFailedText" format="string|reference" />
+        <attr name="loadMoreBackgroundColor" format="color|reference" />
+        <attr name="loadMoreProgressIndeterminateDrawable" format="reference" />
+        <attr name="loadMoreProgressIndeterminateDrawableTintColor" format="color|reference" />
         <!--=========================Refresh=============================-->
-        <attr name="pullDownText" format="string|reference"/>
-        <attr name="upToRefreshText" format="string|reference"/>
-        <attr name="refreshingText" format="string|reference"/>
-        <attr name="refreshSuccessText" format="string|reference"/>
-        <attr name="refreshFailedText" format="string|reference"/>
-        <attr name="refreshBackgroundColor" format="color|reference"/>
-        <attr name="refreshTextSize" format="dimension"/>
-        <attr name="refreshTextColor" format="color|reference"/>
-        <attr name="refreshArrowTintColor" format="color|reference"/>
-        <attr name="refreshArrowDrawable" format="reference"/>
-        <attr name="refreshProgressIndeterminateDrawable" format="reference"/>
-        <attr name="refreshProgressIndeterminateDrawableTintColor" format="reference"/>
-        <attr name="refreshMaxOffset" format="float"/>
-        <attr name="refreshMinOffset" format="float"/>
-        <attr name="refreshRotateOffset" format="float"/>
+        <attr name="refreshEnable" format="boolean" />
+        <attr name="pullDownText" format="string|reference" />
+        <attr name="upToRefreshText" format="string|reference" />
+        <attr name="refreshingText" format="string|reference" />
+        <attr name="refreshSuccessText" format="string|reference" />
+        <attr name="refreshFailedText" format="string|reference" />
+        <attr name="refreshBackgroundColor" format="color|reference" />
+        <attr name="refreshTextSize" format="dimension" />
+        <attr name="refreshTextColor" format="color|reference" />
+        <attr name="refreshArrowTintColor" format="color|reference" />
+        <attr name="refreshArrowDrawable" format="reference" />
+        <attr name="refreshProgressIndeterminateDrawable" format="reference" />
+        <attr name="refreshProgressIndeterminateDrawableTintColor" format="reference" />
+        <attr name="refreshMaxOffset" format="float" />
+        <attr name="refreshMinOffset" format="float" />
+        <attr name="refreshRotateOffset" format="float" />
 
     </declare-styleable>
 
