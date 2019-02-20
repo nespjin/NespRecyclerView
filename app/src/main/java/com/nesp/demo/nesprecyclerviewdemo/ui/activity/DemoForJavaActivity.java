@@ -102,11 +102,11 @@ public class DemoForJavaActivity extends BaseActivity implements ILoadDataVIew, 
         switch (item.getItemId()) {
             case 0:
                 // Set Header
-                nespRecyclerView.setHeaderViewResource(R.layout.header);
+                nespRecyclerView.setHeaderView(R.layout.header);
                 return true;
             case 1:
                 // Set Footer
-                nespRecyclerView.setFooterViewResource(R.layout.footer);
+                nespRecyclerView.setFooterView(R.layout.footer);
                 return true;
             case 2:
                 // Remove Header
@@ -174,7 +174,7 @@ public class DemoForJavaActivity extends BaseActivity implements ILoadDataVIew, 
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-       Log.e(TAG,"DemoForJavaActivity.uncaughtException: e \n" +e);
+        Log.e(TAG, "DemoForJavaActivity.uncaughtException: e \n" + e);
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 }

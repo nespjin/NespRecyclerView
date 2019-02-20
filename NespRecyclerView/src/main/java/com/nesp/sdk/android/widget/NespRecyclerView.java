@@ -39,15 +39,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.ColorRes;
-import androidx.annotation.DimenRes;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.LayoutRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
+import androidx.annotation.*;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -84,6 +76,17 @@ public class NespRecyclerView extends RecyclerView {
      * A fixed view which displayed when no data.
      */
     private View emptyView;
+
+    /**
+     * Drawable for default emptyView
+     */
+    private Drawable emptyDrawable;
+
+    /**
+     * EmptyText for default emptyView
+     */
+    private String emptyText = "";
+
     /**
      * A fixed view to appear at the top of the list.
      */
@@ -278,6 +281,22 @@ public class NespRecyclerView extends RecyclerView {
     }
 
     private void initAttrs(Context context, TypedArray typedArray) {
+        /*
+         * Add the customize of defaultEmptyView from layout
+         */
+        emptyText = typedArray.getString(R.styleable.NespRecyclerView_emptyText);
+        Log.e(TAG, "NespRecyclerView.initAttrs: emptyText " + emptyText);
+
+        int emptyDrawableResId = typedArray.getResourceId(R.styleable.NespRecyclerView_emptyDrawable, -1);
+        if (emptyDrawableResId != -1) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                emptyDrawable = getResources().getDrawable(emptyDrawableResId, context.getTheme());
+            } else {
+                //noinspection deprecation
+                emptyDrawable = getResources().getDrawable(emptyDrawableResId);
+            }
+        }
+
         /*
          *  Add the customize of loadMoreView from layout
          */
@@ -509,11 +528,20 @@ public class NespRecyclerView extends RecyclerView {
      * Set empty view for {@link NespRecyclerView} with view.
      * <p>
      * It must be called after {@link #setAdapter(Adapter)} and {@link #setLayoutManager(LayoutManager)}
+     * <p>
      *
      * @param emptyView emptyView
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setEmptyView(View emptyView) {
+        if (getAdapter() == null) {
+            throw new RuntimeException("You need to call setAdapter(Adapter) before call setEmptyView()");
+        }
+
+        if (getLayoutManager() == null) {
+            throw new RuntimeException("You need to call setLayoutManager(LayoutManager) before call setEmptyView()");
+        }
+
         if (emptyView == null || this.emptyView != null) return this;
         this.emptyView = emptyView;
         nespRecyclerViewAdapter.notifyDataSetChanged();
@@ -529,28 +557,93 @@ public class NespRecyclerView extends RecyclerView {
      * @param emptyViewLayoutResId empty view layout resource id
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setEmptyViewResource(@LayoutRes int emptyViewLayoutResId) {
+    public NespRecyclerView setEmptyView(@LayoutRes int emptyViewLayoutResId) {
         return setEmptyView(inflateView(emptyViewLayoutResId));
     }
 
     /**
      * Set default empty view for {@link NespRecyclerView} with internal empty view.
      * <p>
+     * It must be called after {@link #setAdapter(Adapter)} and {@link #setLayoutManager(LayoutManager)}
+     * <p>
      * {@link #setEmptyView(View)}
      *
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setDefaultEmptyView() {
+        if (getAdapter() == null)
+            throw new RuntimeException("You need to call setAdapter(Adapter) before call setDefaultEmptyView()");
+
+        if (getLayoutManager() == null)
+            throw new RuntimeException("You need to call setLayoutManager(LayoutManager) before call setDefaultEmptyView()");
+
         return setEmptyView(inflateView(R.layout.nesprecyclerview_empty));
     }
 
     /**
+     * Set empty drawable for default empty view
+     * need to call {@link #setDefaultEmptyView()} before call this method.
+     *
+     * @param emptyDrawable Drawable
+     * @return {@link NespRecyclerView}
+     */
+    public NespRecyclerView setEmptyDrawable(Drawable emptyDrawable) {
+        this.emptyDrawable = emptyDrawable;
+        return this;
+    }
+
+    /**
+     * Set empty drawable for default empty view
+     * need to call {@link #setDefaultEmptyView()} before call this method.
+     *
+     * @param emptyDrawableRes Drawable resource id
+     * @return {@link NespRecyclerView}
+     */
+    public NespRecyclerView setEmptyDrawable(@DrawableRes int emptyDrawableRes) {
+        return setEmptyDrawable(getResources().getDrawable(emptyDrawableRes));
+    }
+
+    /**
+     * Set empty text for default empty view
+     * need to call {@link #setDefaultEmptyView()} before call this method.
+     *
+     * @param emptyText Text
+     * @return {@link NespRecyclerView}
+     */
+    public NespRecyclerView setEmptyText(String emptyText) {
+        this.emptyText = emptyText;
+        return this;
+    }
+
+    /**
+     * Set empty text for default empty view,
+     * need to call {@link #setDefaultEmptyView()} before call this method.
+     *
+     * @param emptyTextRes empty text resource id
+     * @return {@link NespRecyclerView}
+     */
+    public NespRecyclerView setEmptyText(@StringRes int emptyTextRes) {
+        return setEmptyText(getResources().getString(emptyTextRes));
+    }
+
+    /**
      * Set header view for {@link NespRecyclerView} with view.
+     * <p>
+     * It must be called after {@link #setAdapter(Adapter)} and {@link #setLayoutManager(LayoutManager)}
+     * <p>
      *
      * @param headerView header view
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setHeaderView(View headerView) {
+        if (getAdapter() == null) {
+            throw new RuntimeException("You need to call setAdapter(Adapter) before call setHeaderView()");
+        }
+
+        if (getLayoutManager() == null) {
+            throw new RuntimeException("You need to call setLayoutManager(LayoutManager) before call setHeaderView()");
+        }
+
         if (headerView == null || this.headerView != null) return this;
         this.headerView = headerView;
         nespRecyclerViewAdapter.notifyItemInserted(refreshHeaderView == null ? 0 : 1);
@@ -565,17 +658,28 @@ public class NespRecyclerView extends RecyclerView {
      * @param headerViewLayoutResId header view layout resource id
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setHeaderViewResource(@LayoutRes int headerViewLayoutResId) {
+    public NespRecyclerView setHeaderView(@LayoutRes int headerViewLayoutResId) {
         return setHeaderView(inflateView(headerViewLayoutResId));
     }
 
     /**
      * Set footer view for {@link NespRecyclerView} with View.
+     * <p>
+     * It must be called after {@link #setAdapter(Adapter)} and {@link #setLayoutManager(LayoutManager)}
+     * <p>
      *
      * @param footerView footer view
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setFooterView(View footerView) {
+        if (getAdapter() == null) {
+            throw new RuntimeException("You need to call setAdapter(Adapter) before call setFooterView()");
+        }
+
+        if (getLayoutManager() == null) {
+            throw new RuntimeException("You need to call setLayoutManager(LayoutManager) before call setFooterView()");
+        }
+
         if (footerView == null || this.footerView != null) return this;
         this.footerView = footerView;
         nespRecyclerViewAdapter.notifyItemChanged(nespRecyclerViewAdapter.getItemCount() - 1);
@@ -590,7 +694,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param footerViewLayoutResId footer view resource id
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setFooterViewResource(@LayoutRes int footerViewLayoutResId) {
+    public NespRecyclerView setFooterView(@LayoutRes int footerViewLayoutResId) {
         return setFooterView(inflateView(footerViewLayoutResId));
     }
 
@@ -675,7 +779,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param loadMoreTextSizeResId size of loading more text
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreTextSizeResource(@DimenRes int loadMoreTextSizeResId) {
+    public NespRecyclerView setLoadMoreTextSize(@DimenRes int loadMoreTextSizeResId) {
         setLoadMoreTextSize(getResources().getDimension(loadMoreTextSizeResId));
         return this;
     }
@@ -703,7 +807,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param loadMoreTextColorResId color of loading more text
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreTextColorResource(@ColorRes int loadMoreTextColorResId) {
+    public NespRecyclerView setLoadMoreTextColorRes(@ColorRes int loadMoreTextColorResId) {
         setLoadMoreTextColor(getResources().getColor(loadMoreTextColorResId));
         return this;
     }
@@ -731,7 +835,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param loadMoreBackgroundColorResId color of background which loading more view
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreBackgroundColorResource(int loadMoreBackgroundColorResId) {
+    public NespRecyclerView setLoadMoreBackgroundColorRes(int loadMoreBackgroundColorResId) {
         setLoadMoreBackgroundColor(getResources().getColor(loadMoreBackgroundColorResId));
         return this;
     }
@@ -759,7 +863,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param noMoreDataTextResId text which displayed when no more data
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setNoMoreDataTextResource(@StringRes int noMoreDataTextResId) {
+    public NespRecyclerView setNoMoreDataText(@StringRes int noMoreDataTextResId) {
         setNoMoreDataText(getResources().getString(noMoreDataTextResId));
         return this;
     }
@@ -787,7 +891,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param loadingMoreDataTextResId text id which displayed when loading more data
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadingMoreDataTextResource(@StringRes int loadingMoreDataTextResId) {
+    public NespRecyclerView setLoadingMoreDataText(@StringRes int loadingMoreDataTextResId) {
         setLoadingMoreDataText(getResources().getString(loadingMoreDataTextResId));
         return this;
     }
@@ -815,7 +919,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param loadMoreDataFailedTextResId the text which displayed when load failed.
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreDataFailedTextResource(@StringRes int loadMoreDataFailedTextResId) {
+    public NespRecyclerView setLoadMoreDataFailedText(@StringRes int loadMoreDataFailedTextResId) {
         setLoadMoreDataFailedText(getResources().getString(loadMoreDataFailedTextResId));
         return this;
     }
@@ -857,7 +961,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param loadMoreProgressIndeterminateDrawableResId IndeterminateDrawable of  progressBar
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreProgressIndeterminateDrawableResource(@DrawableRes int loadMoreProgressIndeterminateDrawableResId) {
+    public NespRecyclerView setLoadMoreProgressIndeterminateDrawable(@DrawableRes int loadMoreProgressIndeterminateDrawableResId) {
         setLoadMoreProgressIndeterminateDrawable(getResources().getDrawable(loadMoreProgressIndeterminateDrawableResId));
         return this;
     }
@@ -879,7 +983,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param loadMoreProgressIndeterminateDrawableTintColorResId loadMoreProgressIndeterminateDrawableTintColorResId
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreProgressIndeterminateDrawableTintColorResource(@ColorRes int loadMoreProgressIndeterminateDrawableTintColorResId) {
+    public NespRecyclerView setLoadMoreProgressIndeterminateDrawableTintColorRes(@ColorRes int loadMoreProgressIndeterminateDrawableTintColorResId) {
         setLoadMoreProgressIndeterminateDrawableTintColor(getResources().getColor(loadMoreProgressIndeterminateDrawableTintColorResId));
         return this;
     }
@@ -1017,7 +1121,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshBackgroundColorResId refreshBackgroundColorResId
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshBackgroundColorResource(@ColorRes int refreshBackgroundColorResId) {
+    public NespRecyclerView setRefreshBackgroundColorRes(@ColorRes int refreshBackgroundColorResId) {
         setRefreshBackgroundColor(getResources().getColor(refreshBackgroundColorResId));
         return this;
     }
@@ -1045,7 +1149,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param pullDownTextResId {@link #pullDownText}
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setPullDownTextResource(@StringRes int pullDownTextResId) {
+    public NespRecyclerView setPullDownText(@StringRes int pullDownTextResId) {
         setPullDownText(getResources().getString(pullDownTextResId));
         return this;
     }
@@ -1073,7 +1177,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param upToRefreshTextResId {@link #upToRefreshText}
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setUpToRefreshTextResource(@StringRes int upToRefreshTextResId) {
+    public NespRecyclerView setUpToRefreshText(@StringRes int upToRefreshTextResId) {
         setUpToRefreshText(getResources().getString(upToRefreshTextResId));
         return this;
     }
@@ -1101,7 +1205,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshingTextResId {@link #refreshingText}
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshingTextResource(@StringRes int refreshingTextResId) {
+    public NespRecyclerView setRefreshingText(@StringRes int refreshingTextResId) {
         setRefreshingText(getResources().getString(refreshingTextResId));
         return this;
     }
@@ -1129,7 +1233,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshSuccessTextResId {@link #refreshSuccessText}
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshSuccessTextResource(@StringRes int refreshSuccessTextResId) {
+    public NespRecyclerView setRefreshSuccessText(@StringRes int refreshSuccessTextResId) {
         setRefreshSuccessText(getResources().getString(refreshSuccessTextResId));
         return this;
     }
@@ -1157,7 +1261,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshFailedTextResId {@link #refreshFailedText}
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshFailedTextResource(@StringRes int refreshFailedTextResId) {
+    public NespRecyclerView setRefreshFailedText(@StringRes int refreshFailedTextResId) {
         setRefreshFailedText(getResources().getString(refreshFailedTextResId));
         return this;
     }
@@ -1237,7 +1341,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshTextSizeResId refreshTextSize
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshTextSizeRrsource(@DimenRes int refreshTextSizeResId) {
+    public NespRecyclerView setRefreshTextSize(@DimenRes int refreshTextSizeResId) {
         setRefreshTextSize(getResources().getDimension(refreshTextSizeResId));
         return this;
     }
@@ -1259,7 +1363,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshTextColorResId refreshTextColor
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshTextColorResource(@ColorRes int refreshTextColorResId) {
+    public NespRecyclerView setRefreshTextColorRes(@ColorRes int refreshTextColorResId) {
         setRefreshTextColor(getResources().getColor(refreshTextColorResId));
         return this;
     }
@@ -1281,7 +1385,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshArrowTintColorResId refreshArrowTintColor
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshArrowTintColorResource(@ColorRes int refreshArrowTintColorResId) {
+    public NespRecyclerView setRefreshArrowTintColorRes(@ColorRes int refreshArrowTintColorResId) {
         setRefreshArrowTintColor(getResources().getColor(refreshArrowTintColorResId));
         return this;
     }
@@ -1303,7 +1407,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshArrowDrawableResId refreshArrowDrawable
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshArrowDrawableResource(@DrawableRes int refreshArrowDrawableResId) {
+    public NespRecyclerView setRefreshArrowDrawable(@DrawableRes int refreshArrowDrawableResId) {
         setRefreshArrowDrawable(getResources().getDrawable(refreshArrowDrawableResId));
         return this;
     }
@@ -1324,7 +1428,7 @@ public class NespRecyclerView extends RecyclerView {
      *
      * @param colorResId colorResId
      */
-    public NespRecyclerView setRefreshProgressIndeterminateDrawableTintColorResources(@ColorRes int colorResId) {
+    public NespRecyclerView setRefreshProgressIndeterminateDrawableTintColorRes(@ColorRes int colorResId) {
         setRefreshProgressIndeterminateDrawableTintColor(getResources().getColor(colorResId));
         return this;
     }
@@ -1346,7 +1450,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param refreshProgressIndeterminateDrawableResId refreshProgressIndeterminateDrawableResId
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshProgressIndeterminateDrawableResource(@DrawableRes int refreshProgressIndeterminateDrawableResId) {
+    public NespRecyclerView setRefreshProgressIndeterminateDrawable(@DrawableRes int refreshProgressIndeterminateDrawableResId) {
         setRefreshProgressIndeterminateDrawable(getResources().getDrawable(refreshProgressIndeterminateDrawableResId));
         return this;
     }
@@ -1599,8 +1703,27 @@ public class NespRecyclerView extends RecyclerView {
                     return new NespRecyclerViewViewHolder(refreshHeaderView);
                 case ITEM_TYPE_HEADER:
                     return new NespRecyclerViewViewHolder(headerView);
-                case ITEM_TYPE_EMPTY:
+                case ITEM_TYPE_EMPTY: {
+                    if (emptyDrawable != null) {
+                        try {
+                            ((ImageView) emptyView.findViewById(R.id.nrcv_empty_iv))
+                                    .setImageDrawable(emptyDrawable);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    if (emptyText != null && !emptyText.isEmpty()) {
+                        try {
+                            ((TextView) emptyView.findViewById(R.id.nrcv_empty_tv))
+                                    .setText(emptyText);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     return new NespRecyclerViewViewHolder(emptyView);
+                }
                 case ITEM_TYPE_FOOTER:
                     return new NespRecyclerViewViewHolder(footerView);
                 case ITEM_TYPE_LOAD_MORE:
