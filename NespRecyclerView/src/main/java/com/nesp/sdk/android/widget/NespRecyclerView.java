@@ -315,6 +315,7 @@ public class NespRecyclerView extends RecyclerView {
         /*
          *  Add the customize of loadMoreView from layout
          */
+        maxScreenItems = typedArray.getInteger(R.styleable.NespRecyclerView_maxScreenItems, -1);
         loadMoreEnable = typedArray.getBoolean(R.styleable.NespRecyclerView_loadMoreEnable, false);
         isHideNoMoreData = typedArray.getBoolean(R.styleable.NespRecyclerView_hideNoMoreData, false);
         loadMoreTextColor = typedArray.getColor(R.styleable.NespRecyclerView_loadMoreTextColor, Color.GRAY);
@@ -1830,7 +1831,8 @@ public class NespRecyclerView extends RecyclerView {
              */
 
             //Add RefreshHeaderView
-            itemCount++;
+            if (isRefreshEnable)
+                itemCount++;
             //Add HeaderView
             if (headerView != null) itemCount++;
             //Add FooterView
@@ -1855,7 +1857,7 @@ public class NespRecyclerView extends RecyclerView {
             /*
              * The order of the view is very important to be cautiously modified, otherwise it will be confused and return wrong type.
              */
-            if (position == 0) return ITEM_TYPE_REFRESH_HEADER;
+            if (isRefreshEnable && position == 0) return ITEM_TYPE_REFRESH_HEADER;
             if (headerView != null && position == (refreshHeaderView == null ? 0 : 1))
                 return ITEM_TYPE_HEADER;
             if (footerView != null && position == getItemCount() - 1) return ITEM_TYPE_FOOTER;
