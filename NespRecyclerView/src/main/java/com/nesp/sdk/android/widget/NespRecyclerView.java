@@ -39,7 +39,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import androidx.annotation.*;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
+import androidx.annotation.DimenRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -139,6 +147,14 @@ public class NespRecyclerView extends RecyclerView {
      * Loading more enable
      */
     private Boolean loadMoreEnable = false;
+
+
+    /**
+     * The maximum number of Items in screen,if the current number of items Less than the maximum number，
+     * <p>
+     * will not display Load-more-view
+     */
+    private int maxScreenItems = -1;
 
     private OnLoadMoreListener onLoadMoreListener;
     private OnContentItemClickListener onContentItemClickListener;
@@ -285,7 +301,6 @@ public class NespRecyclerView extends RecyclerView {
          * Add the customize of defaultEmptyView from layout
          */
         emptyText = typedArray.getString(R.styleable.NespRecyclerView_emptyText);
-        Log.e(TAG, "NespRecyclerView.initAttrs: emptyText " + emptyText);
 
         int emptyDrawableResId = typedArray.getResourceId(R.styleable.NespRecyclerView_emptyDrawable, -1);
         if (emptyDrawableResId != -1) {
@@ -935,6 +950,14 @@ public class NespRecyclerView extends RecyclerView {
      */
     public NespRecyclerView setHideNoMoreData(boolean hideNoMoreData) {
         this.isHideNoMoreData = hideNoMoreData;
+        return this;
+    }
+
+    /**
+     * {@link #maxScreenItems}
+     */
+    public NespRecyclerView setMaxScreenItems(int maxScreenItems) {
+        this.maxScreenItems = maxScreenItems;
         return this;
     }
 
@@ -1797,7 +1820,11 @@ public class NespRecyclerView extends RecyclerView {
         @Override
         public int getItemCount() {
             //Get the number of real data
+
+
             int itemCount = originAdapter.getItemCount();
+
+            int originItemCount = itemCount;
             /*
              * Add the new View in RecyclerView.
              */
@@ -1809,13 +1836,16 @@ public class NespRecyclerView extends RecyclerView {
             //Add FooterView
             if (footerView != null) itemCount++;
             //Add EmptyView
-            if (emptyView != null && itemCount == 0) {
+            if (emptyView != null && originItemCount == 0) {
                 itemCount++;
                 //If the content data is empty,no need to add LoadMoreView
                 return itemCount;
             }
             //Add LoadMoreView
-            if (loadMoreState != LoadMoreState.LOAD_NOT && loadMoreEnable) itemCount++;
+            if (loadMoreState != LoadMoreState.LOAD_NOT
+                    && loadMoreEnable
+                    && originItemCount >= maxScreenItems
+            ) itemCount++;
             return itemCount;
         }
 
@@ -1834,7 +1864,9 @@ public class NespRecyclerView extends RecyclerView {
                 return ITEM_TYPE_EMPTY;
             } else if (loadMoreState != LoadMoreState.LOAD_NOT
                     && position == getLoadMorePosition()
-                    && loadMoreEnable) {
+                    && loadMoreEnable
+                    && originAdapter.getItemCount() >= maxScreenItems
+            ) {
                 return ITEM_TYPE_LOAD_MORE;
             }
             return ITEM_TYPE_NORMAL;
