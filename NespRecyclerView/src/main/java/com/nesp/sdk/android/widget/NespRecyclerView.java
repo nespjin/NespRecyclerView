@@ -214,7 +214,8 @@ public class NespRecyclerView extends RecyclerView {
         }
     };
 
-    //================================Refresh Field=======================================
+    /*********************************Refresh Field*************************************/
+    //TODO:Refresh Field
 
     private View refreshHeaderView;
     private LinearLayout linearLayoutRefreshRoot;
@@ -277,8 +278,8 @@ public class NespRecyclerView extends RecyclerView {
 
     private Boolean isRefreshRowRotatedUp = false;
 
-    //================================Field End=======================================
-
+    /*********************************Field End*************************************/
+    //TODO:Field End
     public NespRecyclerView(@NonNull Context context) {
         this(context, null);
     }
@@ -394,9 +395,10 @@ public class NespRecyclerView extends RecyclerView {
         }
     }
 
-    //==================================API===========================================
-
-    //================================Normal API=======================================
+    /*********************************API*************************************/
+    //TODO:API
+    /*********************************Normal API*************************************/
+    //TODO:Normal API
 
     /**
      * The {@link NespRecyclerView} whether is currently scrolled top.
