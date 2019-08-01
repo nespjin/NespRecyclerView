@@ -46,7 +46,9 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -185,6 +187,7 @@ public class NespRecyclerView extends RecyclerView {
         @Override
         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
             super.onScrolled(recyclerView, dx, dy);
+            if (isAttachedNestedScrollView) return;
 //            if (recyclerView.getLayoutManager() instanceof LinearLayoutManager) {
 //                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
 //                int itemCount = layoutManager.getItemCount();
@@ -539,6 +542,25 @@ public class NespRecyclerView extends RecyclerView {
         return null;
     }
 
+    private Boolean isAttachedNestedScrollView = false;
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void attachToNestedScrollView(NestedScrollView nestedScrollView) {
+        isAttachedNestedScrollView = true;
+        nestedScrollView.setOnScrollChangeListener((OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            //dy >0 手上滑动
+            //dy <0 手下滑动
+            int dy = scrollY - oldScrollY;
+            if (loadMoreEnable && loadMoreState != LoadMoreState.LOADING && dy > 0) {
+                if (scrollY == ((NestedScrollView) v).getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()) {
+                    loadMoreState = LoadMoreState.LOADING;
+                    if (onLoadMoreListener != null) onLoadMoreListener.onLoadMore();
+                }
+            }
+        });
+    }
+
+
     //================================Empty View,Header View,Footer View API=======================================
 
     /**
@@ -679,6 +701,10 @@ public class NespRecyclerView extends RecyclerView {
         return setHeaderView(inflateView(headerViewLayoutResId));
     }
 
+    public View getHeaderView() {
+        return headerView;
+    }
+
     /**
      * Set footer view for {@link NespRecyclerView} with View.
      * <p>
@@ -758,16 +784,13 @@ public class NespRecyclerView extends RecyclerView {
     /**
      * Set {@link NespRecyclerView} the load more feature whether is enabled
      * <p>
-     * This method is deprecated.
-     * <p>
-     * LoadMoreEnable will be auto set when calling {@link #setOnLoadMoreListener(OnLoadMoreListener)} or {@link #changeLoadMoreUi(boolean, boolean)}
+     * LoadMoreEnable also will be auto set when calling {@link #setOnLoadMoreListener(OnLoadMoreListener)} or {@link #changeLoadMoreUi(boolean, boolean)}
      *
      * @param loadMoreEnable default:false
      *                       true -> load more feature is enabled
      *                       false ->load more feature is not enable
      * @return {@link NespRecyclerView}
      */
-    @Deprecated
     public NespRecyclerView setLoadMoreEnable(Boolean loadMoreEnable) {
         this.loadMoreEnable = loadMoreEnable;
         return this;
@@ -1669,19 +1692,19 @@ public class NespRecyclerView extends RecyclerView {
 
 //================================Adapter=======================================
 
-    private class NespRecyclerViewAdapter extends RecyclerView.Adapter<ViewHolder> {
+    public class NespRecyclerViewAdapter extends RecyclerView.Adapter<ViewHolder> {
 
         private final Adapter originAdapter;
 
         private LoadMoreInflateListener mLoadMoreInflateListener;
 
         //================================Item Type=======================================
-        private final int ITEM_TYPE_REFRESH_HEADER = 0x000041;
-        private final int ITEM_TYPE_NORMAL = 0x000042;
-        private final int ITEM_TYPE_EMPTY = 0x000043;
-        private final int ITEM_TYPE_HEADER = 0x000044;
-        private final int ITEM_TYPE_FOOTER = 0x000045;
-        private final int ITEM_TYPE_LOAD_MORE = 0x000046;
+        public static final int ITEM_TYPE_REFRESH_HEADER = 0x000041;
+        public static final int ITEM_TYPE_NORMAL = 0x000042;
+        public static final int ITEM_TYPE_EMPTY = 0x000043;
+        public static final int ITEM_TYPE_HEADER = 0x000044;
+        public static final int ITEM_TYPE_FOOTER = 0x000045;
+        public static final int ITEM_TYPE_LOAD_MORE = 0x000046;
         //=======================================================================
 
         //Wrapper Adapter here.
@@ -2047,7 +2070,7 @@ public class NespRecyclerView extends RecyclerView {
      * this is the root View; otherwise it is the root of the inflated
      * XML file.
      */
-    private View inflateView(int layoutRes) {
+    public View inflateView(int layoutRes) {
         if (layoutRes == -1) return null;
         return LayoutInflater.from(context).inflate(layoutRes, NespRecyclerView.this, false);
     }
