@@ -509,6 +509,21 @@ public class NespRecyclerView extends RecyclerView {
         return maxPosition;
     }
 
+    public final void notifyDateItemChanged(int index) {
+        if (getAdapter() == null || nespRecyclerViewAdapter == null) return;
+        nespRecyclerViewAdapter.notifyItemChanged(index);
+    }
+
+    public final void notifyItemRemoved(int index) {
+        if (getAdapter() == null || nespRecyclerViewAdapter == null) return;
+        nespRecyclerViewAdapter.notifyItemRemoved(index);
+    }
+
+    public final void notifyDataSetChanged() {
+        if (getAdapter() == null || nespRecyclerViewAdapter == null) return;
+        nespRecyclerViewAdapter.notifyDataSetChanged();
+    }
+
     /**
      * It must be called after {@link #setLayoutManager(LayoutManager)} to adapter {@link GridLayoutManager} and {@link StaggeredGridLayoutManager}
      *
@@ -984,6 +999,13 @@ public class NespRecyclerView extends RecyclerView {
     public NespRecyclerView setMaxScreenItems(int maxScreenItems) {
         this.maxScreenItems = maxScreenItems;
         return this;
+    }
+
+    /**
+     * {@link #maxScreenItems}
+     */
+    public int getMaxScreenItems() {
+        return maxScreenItems;
     }
 
     /**
@@ -1699,12 +1721,12 @@ public class NespRecyclerView extends RecyclerView {
         private LoadMoreInflateListener mLoadMoreInflateListener;
 
         //================================Item Type=======================================
-        public static final int ITEM_TYPE_REFRESH_HEADER = 0x000041;
-        public static final int ITEM_TYPE_NORMAL = 0x000042;
-        public static final int ITEM_TYPE_EMPTY = 0x000043;
-        public static final int ITEM_TYPE_HEADER = 0x000044;
-        public static final int ITEM_TYPE_FOOTER = 0x000045;
-        public static final int ITEM_TYPE_LOAD_MORE = 0x000046;
+        static final int ITEM_TYPE_REFRESH_HEADER = 0x000041;
+        static final int ITEM_TYPE_NORMAL = 0x000042;
+        static final int ITEM_TYPE_EMPTY = 0x000043;
+        static final int ITEM_TYPE_HEADER = 0x000044;
+        static final int ITEM_TYPE_FOOTER = 0x000045;
+        static final int ITEM_TYPE_LOAD_MORE = 0x000046;
         //=======================================================================
 
         //Wrapper Adapter here.
@@ -1877,7 +1899,6 @@ public class NespRecyclerView extends RecyclerView {
 
         @Override
         public int getItemViewType(int position) {
-
             /*
              * The order of the view is very important to be cautiously modified, otherwise it will be confused and return wrong type.
              */
