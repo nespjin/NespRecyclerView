@@ -208,6 +208,7 @@ public class NespRecyclerView extends RecyclerView {
 //                    }
 //                }
 //            }
+
             if (loadMoreEnable && loadMoreState != LoadMoreState.LOADING && dy > 0) {
                 if (findLastVisibleItemPosition() == nespRecyclerViewAdapter.getItemCount() - 1) {
                     loadMoreState = LoadMoreState.LOADING;
