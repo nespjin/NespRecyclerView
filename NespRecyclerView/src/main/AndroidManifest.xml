@@ -16,5 +16,4 @@
   ~   Author:JinZhaolu <1756404649@qq.com>
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.nesp.sdk.android.widget"/>
+<manifest package="com.nesp.sdk.android.widget" />
