@@ -25,7 +25,7 @@ import com.nesp.demo.nesprecyclerviewdemo.R
 import kotlinx.android.synthetic.main.activity_main.*
 
 /**
- * @author <a href="mailto:1756404649@qq.com">靳兆鲁 Email:1756404649@qq.com</a>
+ * @author <a href="mailto:1756404649@qq.com">Jinzhaolu Email:1756404649@qq.com</a>
  * @team NESP Technology
  * @time: Created 19-1-1 下午4:45
  * @project NespRecyclerViewDemo
