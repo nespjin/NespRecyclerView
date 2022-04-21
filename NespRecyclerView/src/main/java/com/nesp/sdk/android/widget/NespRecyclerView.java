@@ -17,6 +17,7 @@
 package com.nesp.sdk.android.widget;
 
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -46,6 +47,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -58,94 +60,117 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
  * @time: Created 19-1-3 上午9:08
  * @project NespRecyclerView
  **/
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class NespRecyclerView extends RecyclerView {
 
     //================================Normal Filed=======================================
 
-    private Context context;
-
     private static final String TAG = "NespRecyclerView";
+
     /**
      * Internal RecyclerAdapter.
      * <p>
      * Wrapper external RecyclerAdapter.
      */
-    private NespRecyclerViewAdapter nespRecyclerViewAdapter;
+    private NespRecyclerViewAdapter mNespAdapter;
 
-    private boolean isScrollTop = false;
-    private boolean isScrollBottom = false;
-    private boolean isScrollUp = false;
-    private boolean isScrollDown = false;
+    /**
+     * Indicate whether the RecyclerView is scroll top.
+     * <p>
+     * {@link #isScrollTop()}
+     */
+    private boolean mIsScrollTop = false;
+
+    /**
+     * Indicate whether the RecyclerView is scroll bottom.
+     * <p>
+     * {@link #isScrollBottom()} ()}
+     */
+    private boolean mIsScrollBottom = false;
+
+    /**
+     * Indicate whether the RecyclerView is scrolling up.
+     * <p>
+     * {@link #isScrollUp()} ()}
+     */
+    private boolean mIsScrollUp = false;
+
+    /**
+     * Indicate whether the RecyclerView is scrolling down.
+     * <p>
+     * {@link #isScrollDown()}
+     */
+    private boolean mIsScrollDown = false;
 
     //================================Empty View,Header View,Footer View Filed=======================================
 
     /**
      * A fixed view which displayed when no data.
      */
-    private View emptyView;
+    private View mEmptyView;
 
     /**
      * Drawable for default emptyView
      */
-    private Drawable emptyDrawable;
+    private Drawable mEmptyDrawable;
 
     /**
      * EmptyText for default emptyView
      */
-    private String emptyText = "";
+    private String mEmptyText = "";
 
     /**
      * A fixed view to appear at the top of the list.
      */
-    private View headerView;
+    private View mHeaderView;
     /**
      * A fixed view to appear at the bottom of the list.
      */
-    private View footerView;
+    private View mFooterView;
 
     //================================Load More Filed=======================================
 
-    private View loadMoreView;
+    private View mLoadMoreView;
     /**
      * Loading state
      */
-    private LoadMoreState loadMoreState;
+    private LoadMoreState mLoadMoreState;
     /**
      * Loading text
      */
-    private TextView tvLoadMoreText;
+    private TextView mTvLoadMoreText;
     /**
      * Loading progressBar
      */
-    private ProgressBar pbLoadMore;
+    private ProgressBar mPbLoadMore;
     /**
      * Loading text size
      */
-    private float loadMoreTextSize;
+    private float mLoadMoreTextSize;
     /**
      * Loading text color
      */
-    private int loadMoreTextColor;
+    private int mLoadMoreTextColor;
     /**
      * Loading view background color
      */
-    private int loadMoreBackgroundColor;
+    private int mLoadMoreBackgroundColor;
     /**
      * No more data text
      */
-    private String noMoreDataText;
+    private String mNoMoreDataText;
     /**
      * Load more data text
      */
-    private String loadingMoreDataText;
+    private String mLoadingMoreDataText;
     /**
      * Load more data failed text
      */
-    private String loadMoreDataFailedText;
+    private String mLoadMoreDataFailedText;
     /**
      * Loading more enable
      */
-    private Boolean loadMoreEnable = false;
+    private Boolean mLoadMoreEnable = false;
 
 
     /**
@@ -153,30 +178,30 @@ public class NespRecyclerView extends RecyclerView {
      * <p>
      * will not display Load-more-view
      */
-    private int maxScreenItems = -1;
+    private int mMaxScreenItems = -1;
 
-    private OnLoadMoreListener onLoadMoreListener;
-    private OnContentItemClickListener onContentItemClickListener;
+    private OnLoadMoreListener mOnLoadMoreListener;
+    private OnContentItemClickListener mOnContentItemClickListener;
 
-    private String lastPbTvLoadMoreTextTemp;
-    private int lastPbLoadMoreVisibilityTemp;
+    private String mLastPbTvLoadMoreTextTemp;
+    private int mLastPbLoadMoreVisibilityTemp;
 
     /**
-     * Do not display {@link #noMoreDataText} when no more data.
+     * Do not display {@link #mNoMoreDataText} when no more data.
      * <p>
      * Default:false.
      */
-    private boolean isHideNoMoreData;
+    private boolean mIsHideNoMoreData;
     /**
      * Drawable of loading more progressBar
      */
-    private Drawable loadMoreProgressIndeterminateDrawable;
-    private int loadMoreProgressIndeterminateDrawableTintColor;
+    private Drawable mLoadMoreProgressIndeterminateDrawable;
+    private int mLoadMoreProgressIndeterminateDrawableTintColor;
 
     /**
      * OnScrollListener for load more.
      */
-    private OnScrollListener onScrollListenerForLoadMore = new OnScrollListener() {
+    private final OnScrollListener mOnScrollListenerForLoadMore = new OnScrollListener() {
         @Override
         public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
             super.onScrollStateChanged(recyclerView, newState);
@@ -207,81 +232,85 @@ public class NespRecyclerView extends RecyclerView {
 //                }
 //            }
 
-            if (loadMoreEnable && loadMoreState != LoadMoreState.LOADING && dy > 0) {
-                if (findLastVisibleItemPosition() == nespRecyclerViewAdapter.getItemCount() - 1) {
-                    loadMoreState = LoadMoreState.LOADING;
-                    if (onLoadMoreListener != null) onLoadMoreListener.onLoadMore();
+            if (mLoadMoreEnable && mLoadMoreState != LoadMoreState.LOADING && dy > 0) {
+                if (findLastVisibleItemPosition() == mNespAdapter.getItemCount() - 1) {
+                    mLoadMoreState = LoadMoreState.LOADING;
+                    if (mOnLoadMoreListener != null) mOnLoadMoreListener.onLoadMore();
                 }
             }
         }
     };
 
-    /*********************************Refresh Field*************************************/
-    //TODO:Refresh Field
+    ///////////////////////////////////////////////////////////////////////////
+    // Refresh Field
+    ///////////////////////////////////////////////////////////////////////////
 
-    private View refreshHeaderView;
-    private LinearLayout linearLayoutRefreshRoot;
-    private ImageView imageViewRefreshArrow;
-    private TextView textViewRefresh;
-    private ProgressBar progressBarRefresh;
+    private View mRefreshHeaderView;
+    private LinearLayout mLinearLayoutRefreshRoot;
+    private ImageView mImageViewRefreshArrow;
+    private TextView mTextViewRefresh;
+    private ProgressBar mProgressBarRefresh;
 
-    private OnRefreshListener onRefreshListener;
+    private OnRefreshListener mOnRefreshListener;
 
-    private Boolean isRefreshing = false;
-    private Boolean isRefreshEnable = true;
+    private Boolean mIsRefreshing = false;
+    private Boolean mIsRefreshEnable = true;
 
     /**
      * @see MotionEvent#ACTION_DOWN
      */
-    private float pointYDown;
+    private float mPointYDown;
     /**
      * @see MotionEvent#ACTION_MOVE
      */
-    private float pointYMove;
-    private float fingerSideOffset;
-    private float viewSlideOffset;
+    private float mPointYMove;
+    private float mFingerSideOffset;
+    private float mViewSlideOffset;
 
     /**
      * Within a certain range of pull-down,it will be display
      */
-    private String pullDownText;
+    private String mPullDownText;
     /**
      * Outside a certain range of pull-down,it will be display
      */
-    private String upToRefreshText;
-    private String refreshingText;
-    private String refreshSuccessText;
-    private String refreshFailedText;
-    private int refreshBackgroundColor;
-    private float refreshTextSize;
-    private int refreshTextColor;
-    private int refreshArrowTintColor;
-    private Drawable refreshArrowDrawable = getResources().getDrawable(R.drawable.ic_nesprecyclerview_arrow_down);
-    private Drawable refreshProgressIndeterminateDrawable;
-    private int refreshProgressIndeterminateDrawableTintColor;
-    private float refreshMaxOffset;
-    private float refreshMinOffset;
-    private float refreshRotateOffset;
+    private String mUpToRefreshText;
+    private String mRefreshingText;
+    private String mRefreshSuccessText;
+    private String mRefreshFailedText;
+    private int mRefreshBackgroundColor;
+    private float mRefreshTextSize;
+    private int mRefreshTextColor;
+    private int mRefreshArrowTintColor;
+    private Drawable mRefreshArrowDrawable;
+    private Drawable mRefreshProgressIndeterminateDrawable;
+    private int mRefreshProgressIndeterminateDrawableTintColor;
+    private float mRefreshMaxOffset;
+    private float mRefreshMinOffset;
+    private float mRefreshRotateOffset;
 
 
-    private LinearLayout.LayoutParams linearLayoutRefreshRootLayoutParams;
-    private int linearLayoutRefreshingHeight = 122;
-    private int linearLayoutInitHeight = 1;
+    private LinearLayout.LayoutParams mLlRefreshRootLayoutParams;
+    private int mLinearLayoutRefreshingHeight = 122;
+    private final int mLlInitHeight = 1;
+
     /**
-     * When {@link #isScrollTop} changes from false to true, it does not call {@link MotionEvent#ACTION_DOWN} but calls {@link MotionEvent#ACTION_MOVE} directly,
-     * so it won't initialize {@link #pointYDown} in {@link MotionEvent#ACTION_DOWN}.
+     * When {@link #mIsScrollTop} changes from false to true,
+     * it does not call {@link MotionEvent#ACTION_DOWN} but calls {@link MotionEvent#ACTION_MOVE} directly,
+     * so it won't initialize {@link #mPointYDown} in {@link MotionEvent#ACTION_DOWN}.
      * <p>
-     * To fix this bug, we set a flag {@link #isCalledActionDown} to determine if it calls {@link MotionEvent#ACTION_DOWN},
-     * if not, we will use the first value of {@link #pointYMove} in the {@link MotionEvent#ACTION_DOWN} event to initialize { @link #pointYDown}.
+     * To fix this bug, we set a flag isCalledActionDown
+     * to determine if it calls {@link MotionEvent#ACTION_DOWN},
+     * if not, we will use the first value of {@link #mPointYMove}
+     * in the {@link MotionEvent#ACTION_DOWN} event to initialize { @link #pointYDown}.
      */
-    private Boolean isCalledActionDown = false;
+    private Boolean mIsCalledActionDown = false;
 
-    private Boolean isCalledActionMove = false;
+    private Boolean mIsCalledActionMove = false;
 
-    private Boolean isRefreshRowRotatedUp = false;
+    private Boolean mIsRefreshRowRotatedUp = false;
 
     /*********************************Field End*************************************/
-    //TODO:Field End
     public NespRecyclerView(@NonNull Context context) {
         this(context, null);
     }
@@ -292,170 +321,156 @@ public class NespRecyclerView extends RecyclerView {
 
     public NespRecyclerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        this.context = context;
         final TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.NespRecyclerView);
         initAttrs(context, typedArray);
         typedArray.recycle();
     }
 
     private void initAttrs(Context context, TypedArray typedArray) {
-        /*
-         * Add the customize of defaultEmptyView from layout
-         */
-        emptyText = typedArray.getString(R.styleable.NespRecyclerView_emptyText);
+        // Add the customize of defaultEmptyView from layout
+        mEmptyText = typedArray.getString(R.styleable.NespRecyclerView_emptyText);
 
         int emptyDrawableResId = typedArray.getResourceId(R.styleable.NespRecyclerView_emptyDrawable, -1);
         if (emptyDrawableResId != -1) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                emptyDrawable = getResources().getDrawable(emptyDrawableResId, context.getTheme());
-            } else {
-                //noinspection deprecation
-                emptyDrawable = getResources().getDrawable(emptyDrawableResId);
-            }
+            mEmptyDrawable = ResourcesCompat.getDrawable(getResources(), emptyDrawableResId, context.getTheme());
         }
 
-        /*
-         *  Add the customize of loadMoreView from layout
-         */
-        maxScreenItems = typedArray.getInteger(R.styleable.NespRecyclerView_maxScreenItems, -1);
-        loadMoreEnable = typedArray.getBoolean(R.styleable.NespRecyclerView_loadMoreEnable, false);
-        isHideNoMoreData = typedArray.getBoolean(R.styleable.NespRecyclerView_hideNoMoreData, false);
-        loadMoreTextColor = typedArray.getColor(R.styleable.NespRecyclerView_loadMoreTextColor, Color.GRAY);
-        loadMoreTextSize = typedArray.getDimensionPixelSize(R.styleable.NespRecyclerView_loadMoreTextSize, getResources().getDimensionPixelSize(R.dimen.load_more_text_size));
+        // Add the customize of loadMoreView from layout
+        mMaxScreenItems = typedArray.getInteger(R.styleable.NespRecyclerView_maxScreenItems, -1);
+        mLoadMoreEnable = typedArray.getBoolean(R.styleable.NespRecyclerView_loadMoreEnable, false);
+        mIsHideNoMoreData = typedArray.getBoolean(R.styleable.NespRecyclerView_hideNoMoreData, false);
+        mLoadMoreTextColor = typedArray.getColor(R.styleable.NespRecyclerView_loadMoreTextColor, Color.GRAY);
+        mLoadMoreTextSize = typedArray.getDimensionPixelSize(R.styleable.NespRecyclerView_loadMoreTextSize, getResources().getDimensionPixelSize(R.dimen.load_more_text_size));
 
-        loadMoreBackgroundColor = typedArray.getColor(R.styleable.NespRecyclerView_loadMoreBackgroundColor, Color.TRANSPARENT);
-        loadMoreProgressIndeterminateDrawableTintColor = typedArray.getColor(R.styleable.NespRecyclerView_loadMoreProgressIndeterminateDrawableTintColor, 0);
+        mLoadMoreBackgroundColor = typedArray.getColor(R.styleable.NespRecyclerView_loadMoreBackgroundColor, Color.TRANSPARENT);
+        mLoadMoreProgressIndeterminateDrawableTintColor = typedArray.getColor(R.styleable.NespRecyclerView_loadMoreProgressIndeterminateDrawableTintColor, 0);
 
         int indeterminateDrawableResId = typedArray.getResourceId(R.styleable.NespRecyclerView_loadMoreProgressIndeterminateDrawable, -1);
         if (indeterminateDrawableResId != -1) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                loadMoreProgressIndeterminateDrawable = getResources().getDrawable(indeterminateDrawableResId, context.getTheme());
-            } else {
-                //noinspection deprecation
-                loadMoreProgressIndeterminateDrawable = getResources().getDrawable(indeterminateDrawableResId);
-            }
+            mLoadMoreProgressIndeterminateDrawable = ResourcesCompat.getDrawable(getResources(), indeterminateDrawableResId, context.getTheme());
         }
 
-        loadingMoreDataText = typedArray.getString(R.styleable.NespRecyclerView_loadingMoreText);
-        loadMoreDataFailedText = typedArray.getString(R.styleable.NespRecyclerView_loadMoreFailedText);
-        noMoreDataText = typedArray.getString(R.styleable.NespRecyclerView_noMoreDataText);
-        if (TextUtils.isEmpty(loadingMoreDataText))
-            loadingMoreDataText = getResources().getString(R.string.nesprecyclerview_text_loading_more);
-        if (TextUtils.isEmpty(loadMoreDataFailedText))
-            loadMoreDataFailedText = getResources().getString(R.string.nesprecyclerview_text_load_more_failed);
-        if (TextUtils.isEmpty(noMoreDataText))
-            noMoreDataText = getResources().getString(R.string.nesprecyclerview_text_no_more_data);
+        mLoadingMoreDataText = typedArray.getString(R.styleable.NespRecyclerView_loadingMoreText);
+        mLoadMoreDataFailedText = typedArray.getString(R.styleable.NespRecyclerView_loadMoreFailedText);
+        mNoMoreDataText = typedArray.getString(R.styleable.NespRecyclerView_noMoreDataText);
+        if (TextUtils.isEmpty(mLoadingMoreDataText))
+            mLoadingMoreDataText = getResources().getString(R.string.nesprecyclerview_text_loading_more);
+        if (TextUtils.isEmpty(mLoadMoreDataFailedText))
+            mLoadMoreDataFailedText = getResources().getString(R.string.nesprecyclerview_text_load_more_failed);
+        if (TextUtils.isEmpty(mNoMoreDataText))
+            mNoMoreDataText = getResources().getString(R.string.nesprecyclerview_text_no_more_data);
 
         /*
          *  Add the customize of refresh from layout
          */
-        isRefreshEnable = typedArray.getBoolean(R.styleable.NespRecyclerView_refreshEnable, true);
-        pullDownText = typedArray.getString(R.styleable.NespRecyclerView_pullDownText);
-        upToRefreshText = typedArray.getString(R.styleable.NespRecyclerView_upToRefreshText);
-        refreshingText = typedArray.getString(R.styleable.NespRecyclerView_refreshingText);
-        refreshSuccessText = typedArray.getString(R.styleable.NespRecyclerView_refreshSuccessText);
-        refreshFailedText = typedArray.getString(R.styleable.NespRecyclerView_refreshFailedText);
-        if (TextUtils.isEmpty(pullDownText))
-            pullDownText = getResources().getString(R.string.nesprecyclerview_text_pull_down);
-        if (TextUtils.isEmpty(upToRefreshText))
-            upToRefreshText = getResources().getString(R.string.nesprecyclerview_text_up_to_refresh);
-        if (TextUtils.isEmpty(refreshingText))
-            refreshingText = getResources().getString(R.string.nesprecyclerview_text_refreshing);
-        if (TextUtils.isEmpty(refreshSuccessText))
-            refreshSuccessText = getResources().getString(R.string.nesprecyclerview_text_refresh_success);
-        if (TextUtils.isEmpty(refreshFailedText))
-            refreshFailedText = getResources().getString(R.string.nesprecyclerview_text_refresh_failed);
+        mIsRefreshEnable = typedArray.getBoolean(R.styleable.NespRecyclerView_refreshEnable, true);
+        mPullDownText = typedArray.getString(R.styleable.NespRecyclerView_pullDownText);
+        mUpToRefreshText = typedArray.getString(R.styleable.NespRecyclerView_upToRefreshText);
+        mRefreshingText = typedArray.getString(R.styleable.NespRecyclerView_refreshingText);
+        mRefreshSuccessText = typedArray.getString(R.styleable.NespRecyclerView_refreshSuccessText);
+        mRefreshFailedText = typedArray.getString(R.styleable.NespRecyclerView_refreshFailedText);
+        if (TextUtils.isEmpty(mPullDownText))
+            mPullDownText = getResources().getString(R.string.nesprecyclerview_text_pull_down);
+        if (TextUtils.isEmpty(mUpToRefreshText))
+            mUpToRefreshText = getResources().getString(R.string.nesprecyclerview_text_up_to_refresh);
+        if (TextUtils.isEmpty(mRefreshingText))
+            mRefreshingText = getResources().getString(R.string.nesprecyclerview_text_refreshing);
+        if (TextUtils.isEmpty(mRefreshSuccessText))
+            mRefreshSuccessText = getResources().getString(R.string.nesprecyclerview_text_refresh_success);
+        if (TextUtils.isEmpty(mRefreshFailedText))
+            mRefreshFailedText = getResources().getString(R.string.nesprecyclerview_text_refresh_failed);
 
-        refreshBackgroundColor = typedArray.getColor(R.styleable.NespRecyclerView_refreshBackgroundColor, Color.TRANSPARENT);
+        mRefreshBackgroundColor = typedArray.getColor(R.styleable.NespRecyclerView_refreshBackgroundColor, Color.TRANSPARENT);
 
-        refreshTextSize = typedArray.getDimension(R.styleable.NespRecyclerView_refreshTextSize, getResources().getDimensionPixelSize(R.dimen.refresh_text_size));
-        refreshTextColor = typedArray.getColor(R.styleable.NespRecyclerView_refreshTextColor, Color.GRAY);
-        refreshArrowTintColor = typedArray.getColor(R.styleable.NespRecyclerView_refreshArrowTintColor, Color.parseColor("#8a8a8a"));
-        refreshProgressIndeterminateDrawableTintColor = typedArray.getColor(R.styleable.NespRecyclerView_refreshProgressIndeterminateDrawableTintColor, 0);
+        mRefreshTextSize = typedArray.getDimension(R.styleable.NespRecyclerView_refreshTextSize, getResources().getDimensionPixelSize(R.dimen.refresh_text_size));
+        mRefreshTextColor = typedArray.getColor(R.styleable.NespRecyclerView_refreshTextColor, Color.GRAY);
+        mRefreshArrowTintColor = typedArray.getColor(R.styleable.NespRecyclerView_refreshArrowTintColor, Color.parseColor("#8a8a8a"));
+        mRefreshProgressIndeterminateDrawableTintColor = typedArray.getColor(R.styleable.NespRecyclerView_refreshProgressIndeterminateDrawableTintColor, 0);
 
-        refreshMaxOffset = typedArray.getFloat(R.styleable.NespRecyclerView_refreshMaxOffset, 1000);
-        refreshMinOffset = typedArray.getFloat(R.styleable.NespRecyclerView_refreshMinOffset, 0);
-        refreshRotateOffset = typedArray.getFloat(R.styleable.NespRecyclerView_refreshRotateOffset, -1);
+        mRefreshMaxOffset = typedArray.getFloat(R.styleable.NespRecyclerView_refreshMaxOffset, 1000);
+        mRefreshMinOffset = typedArray.getFloat(R.styleable.NespRecyclerView_refreshMinOffset, 0);
+        mRefreshRotateOffset = typedArray.getFloat(R.styleable.NespRecyclerView_refreshRotateOffset, -1);
+
+        mRefreshArrowDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_nesprecyclerview_arrow_down, null);
 
         int refreshArrowDrawableResId = typedArray.getResourceId(R.styleable.NespRecyclerView_refreshArrowDrawable, -1);
         int refreshProgressIndeterminateDrawableResId = typedArray.getResourceId(R.styleable.NespRecyclerView_refreshProgressIndeterminateDrawable, -1);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (indeterminateDrawableResId != -1) {
-                refreshArrowDrawable = getResources().getDrawable(refreshArrowDrawableResId, context.getTheme());
-            }
-            if (refreshProgressIndeterminateDrawableResId != -1) {
-                refreshProgressIndeterminateDrawable = getResources().getDrawable(refreshProgressIndeterminateDrawableResId, context.getTheme());
-            }
-        } else {
-            //noinspection deprecation
-            if (indeterminateDrawableResId != -1) {
-                refreshArrowDrawable = getResources().getDrawable(refreshArrowDrawableResId);
-            }
-            if (refreshProgressIndeterminateDrawableResId != -1) {
-                refreshProgressIndeterminateDrawable = getResources().getDrawable(refreshProgressIndeterminateDrawableResId);
-            }
+        if (indeterminateDrawableResId != -1) {
+            mRefreshArrowDrawable = ResourcesCompat.getDrawable(getResources(), refreshArrowDrawableResId, context.getTheme());
+        }
+        if (refreshProgressIndeterminateDrawableResId != -1) {
+            mRefreshProgressIndeterminateDrawable =
+                    ResourcesCompat.getDrawable(getResources(), refreshProgressIndeterminateDrawableResId, context.getTheme());
         }
     }
 
-    /*********************************API*************************************/
-    //TODO:API
-    /*********************************Normal API*************************************/
-    //TODO:Normal API
+    ///////////////////////////////////////////////////////////////////////////
+    // API
+    ///////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Normal API
+    ///////////////////////////////////////////////////////////////////////////
 
     /**
      * The {@link NespRecyclerView} whether is currently scrolled top.
      *
-     * @return {@link #isScrollTop}
+     * @return {@link #mIsScrollTop}
      */
     public Boolean isScrollTop() {
-        return this.isScrollTop;
+        return this.mIsScrollTop;
     }
 
     /**
      * The {@link NespRecyclerView} whether is currently scrolled bottom.
      *
-     * @return {@link #isScrollBottom}
+     * @return {@link #mIsScrollBottom}
      */
     public Boolean isScrollBottom() {
-        return this.isScrollBottom;
+        return this.mIsScrollBottom;
     }
 
     /**
      * The {@link NespRecyclerView} whether is currently scrolling up.
      *
-     * @return {@link #isScrollUp}
+     * @return {@link #mIsScrollUp}
      */
     public Boolean isScrollUp() {
-        return isScrollUp;
+        return mIsScrollUp;
     }
 
     /**
      * The {@link NespRecyclerView} whether is currently scrolling down.
      *
-     * @return {@link #isScrollDown}
+     * @return {@link #mIsScrollDown}
      */
     public Boolean isScrollDown() {
-        return isScrollDown;
+        return mIsScrollDown;
     }
 
     /**
      * Find the first current visible position depends on LayoutManger
      *
      * @return the first visible position
+     * @throws IllegalStateException if LayoutManager is null
      * @see #setOnRefreshListener(OnRefreshListener)
      */
     public int findFirstVisibleItemPosition() {
+        final LayoutManager manager = getLayoutManager();
+        if (manager == null) {
+            throw new IllegalStateException("Please set LayoutManager first");
+        }
         int position;
-        if (getLayoutManager() instanceof LinearLayoutManager) {
-            position = ((LinearLayoutManager) getLayoutManager()).findFirstVisibleItemPosition();
-        } else if (getLayoutManager() instanceof GridLayoutManager) {
-            position = ((GridLayoutManager) getLayoutManager()).findFirstVisibleItemPosition();
-        } else if (getLayoutManager() instanceof StaggeredGridLayoutManager) {
-            StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) getLayoutManager();
+        if (manager instanceof GridLayoutManager) {
+            position = ((GridLayoutManager) manager).findFirstVisibleItemPosition();
+        } else if (manager instanceof LinearLayoutManager) {
+            position = ((LinearLayoutManager) manager).findFirstVisibleItemPosition();
+        } else if (manager instanceof StaggeredGridLayoutManager) {
+            StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) manager;
             int[] lastPositions = layoutManager.findFirstVisibleItemPositions(new int[layoutManager.getSpanCount()]);
             position = findMinPosition(lastPositions);
         } else {
-            position = getLayoutManager().getItemCount() - 1;
+            position = manager.getItemCount() - 1;
         }
         return position;
     }
@@ -464,20 +479,25 @@ public class NespRecyclerView extends RecyclerView {
      * Find the last current visible position depends on LayoutManger
      *
      * @return the last visible position
+     * @throws IllegalStateException if LayoutManager is null
      * @see #setOnLoadMoreListener(OnLoadMoreListener)
      */
     public int findLastVisibleItemPosition() {
+        final LayoutManager manager = getLayoutManager();
+        if (manager == null) {
+            throw new IllegalStateException("Please set LayoutManager first");
+        }
         int position;
-        if (getLayoutManager() instanceof LinearLayoutManager) {
-            position = ((LinearLayoutManager) getLayoutManager()).findLastVisibleItemPosition();
-        } else if (getLayoutManager() instanceof GridLayoutManager) {
-            position = ((GridLayoutManager) getLayoutManager()).findLastVisibleItemPosition();
-        } else if (getLayoutManager() instanceof StaggeredGridLayoutManager) {
-            StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) getLayoutManager();
+        if (manager instanceof GridLayoutManager) {
+            position = ((GridLayoutManager) manager).findLastVisibleItemPosition();
+        } else if (manager instanceof LinearLayoutManager) {
+            position = ((LinearLayoutManager) manager).findLastVisibleItemPosition();
+        } else if (manager instanceof StaggeredGridLayoutManager) {
+            StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) manager;
             int[] lastPositions = layoutManager.findLastVisibleItemPositions(new int[layoutManager.getSpanCount()]);
             position = findMaxPosition(lastPositions);
         } else {
-            position = getLayoutManager().getItemCount() - 1;
+            position = manager.getItemCount() - 1;
         }
         return position;
     }
@@ -508,31 +528,44 @@ public class NespRecyclerView extends RecyclerView {
         return maxPosition;
     }
 
-    public final void notifyDateItemChanged(int index) {
-        if (getAdapter() == null || nespRecyclerViewAdapter == null) return;
-        nespRecyclerViewAdapter.notifyItemChanged(index);
-    }
-
-    public final void notifyItemRemoved(int index) {
-        if (getAdapter() == null || nespRecyclerViewAdapter == null) return;
-        nespRecyclerViewAdapter.notifyItemRemoved(index);
-    }
-
-    public final void notifyDataSetChanged() {
-        if (getAdapter() == null || nespRecyclerViewAdapter == null) return;
-        nespRecyclerViewAdapter.notifyDataSetChanged();
+    /**
+     * @param position Position of the item that has changed
+     * @see RecyclerView.Adapter#notifyItemChanged(int)
+     * @see #notifyItemRemoved(int)
+     */
+    public final void notifyDateItemChanged(int position) {
+        if (getAdapter() == null || mNespAdapter == null) return;
+        mNespAdapter.notifyItemChanged(position);
     }
 
     /**
-     * It must be called after {@link #setLayoutManager(LayoutManager)} to adapter {@link GridLayoutManager} and {@link StaggeredGridLayoutManager}
+     * @param position Position of the item that has changed
+     * @see RecyclerView.Adapter#notifyItemRemoved(int)
+     * @see #notifyDateItemChanged(int)
+     */
+    public final void notifyItemRemoved(int position) {
+        if (getAdapter() == null || mNespAdapter == null) return;
+        mNespAdapter.notifyItemRemoved(position);
+    }
+
+    @Deprecated
+    @SuppressLint("NotifyDataSetChanged")
+    public final void notifyDataSetChanged() {
+        if (getAdapter() == null || mNespAdapter == null) return;
+        mNespAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * It must be called after {@link #setLayoutManager(LayoutManager)} to adapter
+     * {@link GridLayoutManager} and {@link StaggeredGridLayoutManager}
      *
-     * @param originAdapter originAdapter
+     * @param adapter the original adapter
      */
     @Override
-    public void setAdapter(@Nullable Adapter originAdapter) {
-        if (originAdapter == null) return;
-        nespRecyclerViewAdapter = new NespRecyclerViewAdapter(originAdapter);
-        super.setAdapter(nespRecyclerViewAdapter);
+    public void setAdapter(@Nullable Adapter adapter) {
+        if (adapter == null) return;
+        mNespAdapter = new NespRecyclerViewAdapter(adapter);
+        super.setAdapter(mNespAdapter);
     }
 
     /**
@@ -543,16 +576,17 @@ public class NespRecyclerView extends RecyclerView {
      */
     @Override
     public void setLayoutManager(@Nullable LayoutManager layoutManager) {
-        if (nespRecyclerViewAdapter != null) {
-            nespRecyclerViewAdapter.adaptLayoutManager(layoutManager);
+        if (mNespAdapter != null) {
+            mNespAdapter.adaptLayoutManager(layoutManager);
         }
         super.setLayoutManager(layoutManager);
     }
 
     @Nullable
     @Override
+    @SuppressWarnings("rawtypes")
     public Adapter getAdapter() {
-        if (nespRecyclerViewAdapter != null) return nespRecyclerViewAdapter.getOriginAdapter();
+        if (mNespAdapter != null) return mNespAdapter.getOriginAdapter();
         return null;
     }
 
@@ -565,10 +599,10 @@ public class NespRecyclerView extends RecyclerView {
             //dy >0 手上滑动
             //dy <0 手下滑动
             int dy = scrollY - oldScrollY;
-            if (loadMoreEnable && loadMoreState != LoadMoreState.LOADING && dy > 0) {
+            if (mLoadMoreEnable && mLoadMoreState != LoadMoreState.LOADING && dy > 0) {
                 if (scrollY == ((NestedScrollView) v).getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()) {
-                    loadMoreState = LoadMoreState.LOADING;
-                    if (onLoadMoreListener != null) onLoadMoreListener.onLoadMore();
+                    mLoadMoreState = LoadMoreState.LOADING;
+                    if (mOnLoadMoreListener != null) mOnLoadMoreListener.onLoadMore();
                 }
             }
         });
@@ -586,6 +620,7 @@ public class NespRecyclerView extends RecyclerView {
      * @param emptyView emptyView
      * @return {@link NespRecyclerView}
      */
+    @SuppressLint("NotifyDataSetChanged")
     public NespRecyclerView setEmptyView(View emptyView) {
         if (getAdapter() == null) {
             throw new RuntimeException("You need to call setAdapter(Adapter) before call setEmptyView()");
@@ -595,9 +630,9 @@ public class NespRecyclerView extends RecyclerView {
             throw new RuntimeException("You need to call setLayoutManager(LayoutManager) before call setEmptyView()");
         }
 
-        if (emptyView == null || this.emptyView != null) return this;
-        this.emptyView = emptyView;
-        nespRecyclerViewAdapter.notifyDataSetChanged();
+        if (emptyView == null || this.mEmptyView != null) return this;
+        this.mEmptyView = emptyView;
+        mNespAdapter.notifyDataSetChanged();
         return this;
     }
 
@@ -641,7 +676,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setEmptyDrawable(Drawable emptyDrawable) {
-        this.emptyDrawable = emptyDrawable;
+        this.mEmptyDrawable = emptyDrawable;
         return this;
     }
 
@@ -649,11 +684,11 @@ public class NespRecyclerView extends RecyclerView {
      * Set empty drawable for default empty view
      * need to call {@link #setDefaultEmptyView()} before call this method.
      *
-     * @param emptyDrawableRes Drawable resource id
+     * @param id Drawable resource id
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setEmptyDrawable(@DrawableRes int emptyDrawableRes) {
-        return setEmptyDrawable(getResources().getDrawable(emptyDrawableRes));
+    public NespRecyclerView setEmptyDrawable(@DrawableRes int id) {
+        return setEmptyDrawable(ResourcesCompat.getDrawable(getResources(), id, null));
     }
 
     /**
@@ -662,9 +697,10 @@ public class NespRecyclerView extends RecyclerView {
      *
      * @param emptyText Text
      * @return {@link NespRecyclerView}
+     * @see #setEmptyText(int)
      */
     public NespRecyclerView setEmptyText(String emptyText) {
-        this.emptyText = emptyText;
+        this.mEmptyText = emptyText;
         return this;
     }
 
@@ -672,11 +708,11 @@ public class NespRecyclerView extends RecyclerView {
      * Set empty text for default empty view,
      * need to call {@link #setDefaultEmptyView()} before call this method.
      *
-     * @param emptyTextRes empty text resource id
+     * @param id empty text resource id
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setEmptyText(@StringRes int emptyTextRes) {
-        return setEmptyText(getResources().getString(emptyTextRes));
+    public NespRecyclerView setEmptyText(@StringRes int id) {
+        return setEmptyText(getResources().getString(id));
     }
 
     /**
@@ -697,9 +733,9 @@ public class NespRecyclerView extends RecyclerView {
             throw new RuntimeException("You need to call setLayoutManager(LayoutManager) before call setHeaderView()");
         }
 
-        if (headerView == null || this.headerView != null) return this;
-        this.headerView = headerView;
-        nespRecyclerViewAdapter.notifyItemInserted(refreshHeaderView == null ? 0 : 1);
+        if (headerView == null || this.mHeaderView != null) return this;
+        this.mHeaderView = headerView;
+        mNespAdapter.notifyItemInserted(mRefreshHeaderView == null ? 0 : 1);
         return this;
     }
 
@@ -716,7 +752,7 @@ public class NespRecyclerView extends RecyclerView {
     }
 
     public View getHeaderView() {
-        return headerView;
+        return mHeaderView;
     }
 
     /**
@@ -737,9 +773,9 @@ public class NespRecyclerView extends RecyclerView {
             throw new RuntimeException("You need to call setLayoutManager(LayoutManager) before call setFooterView()");
         }
 
-        if (footerView == null || this.footerView != null) return this;
-        this.footerView = footerView;
-        nespRecyclerViewAdapter.notifyItemChanged(nespRecyclerViewAdapter.getItemCount() - 1);
+        if (footerView == null || this.mFooterView != null) return this;
+        this.mFooterView = footerView;
+        mNespAdapter.notifyItemChanged(mNespAdapter.getItemCount() - 1);
         return this;
     }
 
@@ -761,9 +797,9 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView removeHeaderView() {
-        if (this.headerView == null) return this;
-        this.headerView = null;
-        nespRecyclerViewAdapter.notifyItemRemoved(refreshHeaderView == null ? 0 : 1);
+        if (this.mHeaderView == null) return this;
+        this.mHeaderView = null;
+        mNespAdapter.notifyItemRemoved(mRefreshHeaderView == null ? 0 : 1);
         return this;
     }
 
@@ -773,9 +809,9 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView removeFooterView() {
-        if (this.footerView == null) return this;
-        this.footerView = null;
-        nespRecyclerViewAdapter.notifyItemRemoved(nespRecyclerViewAdapter.getItemCount() - 1);
+        if (this.mFooterView == null) return this;
+        this.mFooterView = null;
+        mNespAdapter.notifyItemRemoved(mNespAdapter.getItemCount() - 1);
         return this;
     }
 
@@ -789,9 +825,9 @@ public class NespRecyclerView extends RecyclerView {
      */
     public NespRecyclerView setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
         if (onLoadMoreListener == null) return this;
-        this.onLoadMoreListener = onLoadMoreListener;
-        this.loadMoreEnable = true;
-        this.addOnScrollListener(onScrollListenerForLoadMore);
+        this.mOnLoadMoreListener = onLoadMoreListener;
+        this.mLoadMoreEnable = true;
+        this.addOnScrollListener(mOnScrollListenerForLoadMore);
         return this;
     }
 
@@ -806,7 +842,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setLoadMoreEnable(Boolean loadMoreEnable) {
-        this.loadMoreEnable = loadMoreEnable;
+        this.mLoadMoreEnable = loadMoreEnable;
         return this;
     }
 
@@ -820,7 +856,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setLoadMoreTextSize(float loadMoreTextSize) {
-        this.loadMoreTextSize = loadMoreTextSize;
+        this.mLoadMoreTextSize = loadMoreTextSize;
         return this;
     }
 
@@ -848,7 +884,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setLoadMoreTextColor(@ColorInt int loadMoreTextColor) {
-        this.loadMoreTextColor = loadMoreTextColor;
+        this.mLoadMoreTextColor = loadMoreTextColor;
         return this;
     }
 
@@ -876,7 +912,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setLoadMoreBackgroundColor(@ColorInt int loadMoreBackgroundColor) {
-        this.loadMoreBackgroundColor = loadMoreBackgroundColor;
+        this.mLoadMoreBackgroundColor = loadMoreBackgroundColor;
         return this;
     }
 
@@ -904,7 +940,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setNoMoreDataText(String noMoreDataText) {
-        this.noMoreDataText = noMoreDataText;
+        this.mNoMoreDataText = noMoreDataText;
         return this;
     }
 
@@ -932,7 +968,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setLoadingMoreDataText(String loadingMoreDataText) {
-        this.loadingMoreDataText = loadingMoreDataText;
+        this.mLoadingMoreDataText = loadingMoreDataText;
         return this;
     }
 
@@ -960,7 +996,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setLoadMoreDataFailedText(String loadMoreDataFailedText) {
-        this.loadMoreDataFailedText = loadMoreDataFailedText;
+        this.mLoadMoreDataFailedText = loadMoreDataFailedText;
         return this;
     }
 
@@ -979,7 +1015,7 @@ public class NespRecyclerView extends RecyclerView {
     }
 
     /**
-     * Whether to hide {@link #noMoreDataText},default:false.
+     * Whether to hide {@link #mNoMoreDataText},default:false.
      * <p>
      * You always can use it in xml:
      * <code>app:hideNoMoreData</code>
@@ -988,23 +1024,23 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setHideNoMoreData(boolean hideNoMoreData) {
-        this.isHideNoMoreData = hideNoMoreData;
+        this.mIsHideNoMoreData = hideNoMoreData;
         return this;
     }
 
     /**
-     * {@link #maxScreenItems}
+     * {@link #mMaxScreenItems}
      */
     public NespRecyclerView setMaxScreenItems(int maxScreenItems) {
-        this.maxScreenItems = maxScreenItems;
+        this.mMaxScreenItems = maxScreenItems;
         return this;
     }
 
     /**
-     * {@link #maxScreenItems}
+     * {@link #mMaxScreenItems}
      */
     public int getMaxScreenItems() {
-        return maxScreenItems;
+        return mMaxScreenItems;
     }
 
     /**
@@ -1013,11 +1049,11 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:loadMoreIndeterminateDrawable</code>
      *
-     * @param loadMoreProgressIndeterminateDrawable IndeterminateDrawable of  progressBar
+     * @param drawable IndeterminateDrawable of  progressBar
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreProgressIndeterminateDrawable(Drawable loadMoreProgressIndeterminateDrawable) {
-        this.loadMoreProgressIndeterminateDrawable = loadMoreProgressIndeterminateDrawable;
+    public NespRecyclerView setLoadMoreProgressIndeterminateDrawable(Drawable drawable) {
+        this.mLoadMoreProgressIndeterminateDrawable = drawable;
         return this;
     }
 
@@ -1027,54 +1063,54 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:loadMoreIndeterminateDrawable</code>
      *
-     * @param loadMoreProgressIndeterminateDrawableResId IndeterminateDrawable of  progressBar
+     * @param id IndeterminateDrawable of  progressBar
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreProgressIndeterminateDrawable(@DrawableRes int loadMoreProgressIndeterminateDrawableResId) {
-        setLoadMoreProgressIndeterminateDrawable(getResources().getDrawable(loadMoreProgressIndeterminateDrawableResId));
+    public NespRecyclerView setLoadMoreProgressIndeterminateDrawable(@DrawableRes int id) {
+        setLoadMoreProgressIndeterminateDrawable(ResourcesCompat.getDrawable(getResources(), id, null));
         return this;
     }
 
     /**
      * Set the TintColor used in the Indeterminate Drawable of load-more progress.
      *
-     * @param loadMoreProgressIndeterminateDrawableTintColor loadMoreProgressIndeterminateDrawableTintColor
+     * @param color the color of the progress indeterminate drawable tint
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreProgressIndeterminateDrawableTintColor(@ColorInt int loadMoreProgressIndeterminateDrawableTintColor) {
-        this.loadMoreProgressIndeterminateDrawableTintColor = loadMoreProgressIndeterminateDrawableTintColor;
+    public NespRecyclerView setLoadMoreProgressIndeterminateDrawableTintColor(@ColorInt int color) {
+        this.mLoadMoreProgressIndeterminateDrawableTintColor = color;
         return this;
     }
 
     /**
      * Set the TintColor resource used in the Indeterminate Drawable of load-more progress from color resource.
      *
-     * @param loadMoreProgressIndeterminateDrawableTintColorResId loadMoreProgressIndeterminateDrawableTintColorResId
+     * @param id the color resource id of the progress indeterminate drawable tint
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setLoadMoreProgressIndeterminateDrawableTintColorRes(@ColorRes int loadMoreProgressIndeterminateDrawableTintColorResId) {
-        setLoadMoreProgressIndeterminateDrawableTintColor(getResources().getColor(loadMoreProgressIndeterminateDrawableTintColorResId));
+    public NespRecyclerView setLoadMoreProgressIndeterminateDrawableTintColorRes(@ColorRes int id) {
+        setLoadMoreProgressIndeterminateDrawableTintColor(getResources().getColor(id));
         return this;
     }
 
     /**
      * Set content click item listener,not include empty view,header view and footer view
      *
-     * @param onContentItemClickListener onContentItemClickListener
+     * @param listener onContentItemClickListener
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setOnContentItemClickListener(OnContentItemClickListener onContentItemClickListener) {
-        this.onContentItemClickListener = onContentItemClickListener;
+    public NespRecyclerView setOnContentItemClickListener(OnContentItemClickListener listener) {
+        this.mOnContentItemClickListener = listener;
         return this;
     }
 
     /**
-     * get {@link #loadMoreView}
+     * get {@link #mLoadMoreView}
      *
-     * @return {@link #loadMoreView}
+     * @return {@link #mLoadMoreView}
      */
     public View getLoadMoreView() {
-        return loadMoreView;
+        return mLoadMoreView;
     }
 
     /**
@@ -1083,7 +1119,7 @@ public class NespRecyclerView extends RecyclerView {
      * @see #notifyLoadMoreFinish(boolean, boolean)
      */
     public void notifyLoadMoreFailed() {
-        notifyLoadMoreFinish(false, true);
+        notifyLoadMoreFinishRange(false, true, 0, 0);
     }
 
     /**
@@ -1091,9 +1127,23 @@ public class NespRecyclerView extends RecyclerView {
      *
      * @param hasMore has more data or not
      * @see #notifyLoadMoreFinish(boolean, boolean)
+     * @deprecated use {@link #notifyLoadMoreSuccessfulRange(boolean, int, int)} instead
      */
+    @Deprecated
     public void notifyLoadMoreSuccessful(boolean hasMore) {
         notifyLoadMoreFinish(true, hasMore);
+    }
+
+    /**
+     * Called when load more data successful
+     *
+     * @param hasMore       has more data or not
+     * @param positionStart position start to changed
+     * @param itemCount     item count to changed
+     */
+    public void notifyLoadMoreSuccessfulRange(final boolean hasMore, final int positionStart,
+                                              final int itemCount) {
+        notifyLoadMoreFinishRange(true, hasMore, positionStart, itemCount);
     }
 
     /**
@@ -1103,22 +1153,45 @@ public class NespRecyclerView extends RecyclerView {
      * @param hasMore Whether has more data to be loaded
      * @see #setOnLoadMoreListener(OnLoadMoreListener)
      */
+    @Deprecated
+    @SuppressLint("NotifyDataSetChanged")
     private void notifyLoadMoreFinish(final boolean success, final boolean hasMore) {
-        this.removeOnScrollListener(onScrollListenerForLoadMore);
+        this.removeOnScrollListener(mOnScrollListenerForLoadMore);
 
-        loadMoreState = LoadMoreState.LOAD_FAILED;
+        mLoadMoreState = LoadMoreState.LOAD_FAILED;
 
         if (success) {
-            loadMoreState = LoadMoreState.LOAD_SUCCESS;
-            nespRecyclerViewAdapter.notifyDataSetChanged();
+            mLoadMoreState = LoadMoreState.LOAD_SUCCESS;
+            mNespAdapter.notifyDataSetChanged();
         }
 
-        if (loadMoreView != null) {
+        if (mLoadMoreView != null) {
             changeLoadMoreUi(success, hasMore);
         } else {
-            nespRecyclerViewAdapter.setLoadMoreInflateListener(() -> {
+            mNespAdapter.setLoadMoreInflateListener(() -> {
                 changeLoadMoreUi(success, hasMore);
-                nespRecyclerViewAdapter.setLoadMoreInflateListener(null);
+                mNespAdapter.setLoadMoreInflateListener(null);
+            });
+        }
+    }
+
+    private void notifyLoadMoreFinishRange(final boolean success, final boolean hasMore,
+                                           final int positionStart, final int itemCount) {
+        this.removeOnScrollListener(mOnScrollListenerForLoadMore);
+
+        mLoadMoreState = LoadMoreState.LOAD_FAILED;
+
+        if (success) {
+            mLoadMoreState = LoadMoreState.LOAD_SUCCESS;
+            mNespAdapter.notifyItemRangeChanged(positionStart, itemCount);
+        }
+
+        if (mLoadMoreView != null) {
+            changeLoadMoreUi(success, hasMore);
+        } else {
+            mNespAdapter.setLoadMoreInflateListener(() -> {
+                changeLoadMoreUi(success, hasMore);
+                mNespAdapter.setLoadMoreInflateListener(null);
             });
         }
     }
@@ -1127,31 +1200,31 @@ public class NespRecyclerView extends RecyclerView {
 
         if (success) {
             if (hasMore) {
-                showView(pbLoadMore);
-                tvLoadMoreText.setText(loadingMoreDataText);
-                this.addOnScrollListener(onScrollListenerForLoadMore);
+                showView(mPbLoadMore);
+                mTvLoadMoreText.setText(mLoadingMoreDataText);
+                this.addOnScrollListener(mOnScrollListenerForLoadMore);
             } else {
-                if (isHideNoMoreData) {
+                if (mIsHideNoMoreData) {
                     //the mLoadMoreView will GONE when no more data to be loaded
-                    loadMoreEnable = false;
-                    hideView(pbLoadMore);
-                    hideView(tvLoadMoreText);
+                    mLoadMoreEnable = false;
+                    hideView(mPbLoadMore);
+                    hideView(mTvLoadMoreText);
                 } else {
                     //the mLoadMoreView will display "No More Data" when no more data to be loaded
                     //and the progressBar will GONE
-                    loadMoreView.setOnClickListener(null);
-                    hideView(pbLoadMore);
-                    tvLoadMoreText.setText(noMoreDataText);
+                    mLoadMoreView.setOnClickListener(null);
+                    hideView(mPbLoadMore);
+                    mTvLoadMoreText.setText(mNoMoreDataText);
                 }
             }
         } else {
             //the loadMoreView will display {#tvTextLoadFailed} when load more data failed
             //and the progressBar will GONE
-            tvLoadMoreText.setText(loadMoreDataFailedText);
-            hideView(pbLoadMore);
+            mTvLoadMoreText.setText(mLoadMoreDataFailedText);
+            hideView(mPbLoadMore);
         }
-        lastPbLoadMoreVisibilityTemp = pbLoadMore.getVisibility();
-        lastPbTvLoadMoreTextTemp = tvLoadMoreText.getText().toString();
+        mLastPbLoadMoreVisibilityTemp = mPbLoadMore.getVisibility();
+        mLastPbTvLoadMoreTextTemp = mTvLoadMoreText.getText().toString();
     }
 
     /**
@@ -1180,7 +1253,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshBackgroundColor(@ColorInt int refreshBackgroundColor) {
-        this.refreshBackgroundColor = refreshBackgroundColor;
+        this.mRefreshBackgroundColor = refreshBackgroundColor;
         return this;
     }
 
@@ -1201,11 +1274,11 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:pullDownText</code>
      *
-     * @param pullDownText {@link #pullDownText}
+     * @param pullDownText {@link #mPullDownText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setPullDownText(String pullDownText) {
-        this.pullDownText = pullDownText;
+        this.mPullDownText = pullDownText;
         return this;
     }
 
@@ -1215,7 +1288,7 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:pullDownText</code>
      *
-     * @param pullDownTextResId {@link #pullDownText}
+     * @param pullDownTextResId {@link #mPullDownText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setPullDownText(@StringRes int pullDownTextResId) {
@@ -1229,11 +1302,11 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:upToRefreshText</code>
      *
-     * @param upToRefreshText {@link #upToRefreshText}
+     * @param upToRefreshText {@link #mUpToRefreshText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setUpToRefreshText(String upToRefreshText) {
-        this.upToRefreshText = upToRefreshText;
+        this.mUpToRefreshText = upToRefreshText;
         return this;
     }
 
@@ -1243,7 +1316,7 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:upToRefreshText</code>
      *
-     * @param upToRefreshTextResId {@link #upToRefreshText}
+     * @param upToRefreshTextResId {@link #mUpToRefreshText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setUpToRefreshText(@StringRes int upToRefreshTextResId) {
@@ -1257,11 +1330,11 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:refreshingText</code>
      *
-     * @param refreshingText {@link #refreshingText}
+     * @param refreshingText {@link #mRefreshingText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshingText(String refreshingText) {
-        this.refreshingText = refreshingText;
+        this.mRefreshingText = refreshingText;
         return this;
     }
 
@@ -1271,7 +1344,7 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:refreshingText</code>
      *
-     * @param refreshingTextResId {@link #refreshingText}
+     * @param refreshingTextResId {@link #mRefreshingText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshingText(@StringRes int refreshingTextResId) {
@@ -1285,11 +1358,11 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:refreshSuccessText</code>
      *
-     * @param refreshSuccessText {@link #refreshSuccessText}
+     * @param refreshSuccessText {@link #mRefreshSuccessText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshSuccessText(String refreshSuccessText) {
-        this.refreshSuccessText = refreshSuccessText;
+        this.mRefreshSuccessText = refreshSuccessText;
         return this;
     }
 
@@ -1299,7 +1372,7 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:refreshSuccessText</code>
      *
-     * @param refreshSuccessTextResId {@link #refreshSuccessText}
+     * @param refreshSuccessTextResId {@link #mRefreshSuccessText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshSuccessText(@StringRes int refreshSuccessTextResId) {
@@ -1313,11 +1386,11 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:refreshFailedText</code>
      *
-     * @param refreshFailedText {@link #refreshFailedText}
+     * @param refreshFailedText {@link #mRefreshFailedText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshFailedText(String refreshFailedText) {
-        this.refreshFailedText = refreshFailedText;
+        this.mRefreshFailedText = refreshFailedText;
         return this;
     }
 
@@ -1327,7 +1400,7 @@ public class NespRecyclerView extends RecyclerView {
      * You always can use it in xml:
      * <code>app:refreshFailedText</code>
      *
-     * @param refreshFailedTextResId {@link #refreshFailedText}
+     * @param refreshFailedTextResId {@link #mRefreshFailedText}
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshFailedText(@StringRes int refreshFailedTextResId) {
@@ -1341,7 +1414,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return refreshing or not.
      */
     public Boolean isRefreshing() {
-        return this.isRefreshing;
+        return this.mIsRefreshing;
     }
 
     /**
@@ -1349,25 +1422,25 @@ public class NespRecyclerView extends RecyclerView {
      *
      * @param isRefreshSuccess true->Success,false->failed
      */
+    @SuppressWarnings("NotifyDataSetChanged")
     public void notifyRefreshFinish(Boolean isRefreshSuccess) {
-
-        hideView(progressBarRefresh);
+        hideView(mProgressBarRefresh);
         if (isRefreshSuccess) {
-            textViewRefresh.setText(refreshSuccessText);
+            mTextViewRefresh.setText(mRefreshSuccessText);
         } else {
-            textViewRefresh.setText(refreshFailedText);
+            mTextViewRefresh.setText(mRefreshFailedText);
         }
-        ValueAnimator valueAnimator = new ValueAnimator();
-        valueAnimator.setIntValues(linearLayoutRefreshingHeight, linearLayoutInitHeight);
-        valueAnimator.setStartDelay(800);
-        valueAnimator.setDuration(400);
-        valueAnimator.addUpdateListener(animation -> {
-            linearLayoutRefreshRootLayoutParams.height = (int) animation.getAnimatedValue();
-            linearLayoutRefreshRoot.setLayoutParams(linearLayoutRefreshRootLayoutParams);
+        ValueAnimator animator = new ValueAnimator();
+        animator.setIntValues(mLinearLayoutRefreshingHeight, mLlInitHeight);
+        animator.setStartDelay(800);
+        animator.setDuration(400);
+        animator.addUpdateListener(animation -> {
+            mLlRefreshRootLayoutParams.height = (int) animation.getAnimatedValue();
+            mLinearLayoutRefreshRoot.setLayoutParams(mLlRefreshRootLayoutParams);
         });
-        valueAnimator.start();
-        if (isRefreshSuccess) nespRecyclerViewAdapter.notifyDataSetChanged();
-        isRefreshing = false;
+        animator.start();
+        if (isRefreshSuccess) mNespAdapter.notifyDataSetChanged();
+        mIsRefreshing = false;
     }
 
     /**
@@ -1377,7 +1450,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshEnable(Boolean refreshEnable) {
-        isRefreshEnable = refreshEnable;
+        mIsRefreshEnable = refreshEnable;
         return this;
     }
 
@@ -1389,23 +1462,23 @@ public class NespRecyclerView extends RecyclerView {
      */
     public NespRecyclerView setOnRefreshListener(OnRefreshListener onRefreshListener) {
         if (onRefreshListener == null) return this;
-        this.onRefreshListener = onRefreshListener;
+        this.mOnRefreshListener = onRefreshListener;
         return this;
     }
 
     /**
-     * Set text size of {@link #textViewRefresh}
+     * Set text size of {@link #mTextViewRefresh}
      *
      * @param refreshTextSize refreshTextSize
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshTextSize(float refreshTextSize) {
-        this.refreshTextSize = refreshTextSize;
+        this.mRefreshTextSize = refreshTextSize;
         return this;
     }
 
     /**
-     * Set text size of {@link #textViewRefresh} from resource
+     * Set text size of {@link #mTextViewRefresh} from resource
      *
      * @param refreshTextSizeResId refreshTextSize
      * @return {@link NespRecyclerView}
@@ -1416,18 +1489,18 @@ public class NespRecyclerView extends RecyclerView {
     }
 
     /**
-     * Set text color of {@link #textViewRefresh}
+     * Set text color of {@link #mTextViewRefresh}
      *
      * @param refreshTextColor refreshTextColor
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshTextColor(@ColorInt int refreshTextColor) {
-        this.refreshTextColor = refreshTextColor;
+        this.mRefreshTextColor = refreshTextColor;
         return this;
     }
 
     /**
-     * Set text color of {@link #textViewRefresh} from resource
+     * Set text color of {@link #mTextViewRefresh} from resource
      *
      * @param refreshTextColorResId refreshTextColor
      * @return {@link NespRecyclerView}
@@ -1444,7 +1517,7 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshArrowTintColor(@ColorInt int refreshArrowTintColor) {
-        this.refreshArrowTintColor = refreshArrowTintColor;
+        this.mRefreshArrowTintColor = refreshArrowTintColor;
         return this;
     }
 
@@ -1466,18 +1539,18 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshArrowDrawable(Drawable refreshArrowDrawable) {
-        this.refreshArrowDrawable = refreshArrowDrawable;
+        this.mRefreshArrowDrawable = refreshArrowDrawable;
         return this;
     }
 
     /**
      * Set drawable of down arrow from resource.
      *
-     * @param refreshArrowDrawableResId refreshArrowDrawable
+     * @param id the resource id of refresh arrow drawable.
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshArrowDrawable(@DrawableRes int refreshArrowDrawableResId) {
-        setRefreshArrowDrawable(getResources().getDrawable(refreshArrowDrawableResId));
+    public NespRecyclerView setRefreshArrowDrawable(@DrawableRes int id) {
+        setRefreshArrowDrawable(ResourcesCompat.getDrawable(getResources(), id, null));
         return this;
     }
 
@@ -1488,7 +1561,7 @@ public class NespRecyclerView extends RecyclerView {
      */
     public NespRecyclerView setRefreshProgressIndeterminateDrawableTintColor(int color) {
         Log.e(TAG, "NespRecyclerView.setRefreshProgressIndeterminateDrawableTintColor: color" + color);
-        this.refreshProgressIndeterminateDrawableTintColor = color;
+        this.mRefreshProgressIndeterminateDrawableTintColor = color;
         return this;
     }
 
@@ -1509,40 +1582,40 @@ public class NespRecyclerView extends RecyclerView {
      * @return {@link NespRecyclerView}
      */
     public NespRecyclerView setRefreshProgressIndeterminateDrawable(Drawable refreshProgressIndeterminateDrawable) {
-        this.refreshProgressIndeterminateDrawable = refreshProgressIndeterminateDrawable;
+        this.mRefreshProgressIndeterminateDrawable = refreshProgressIndeterminateDrawable;
         return this;
     }
 
     /**
      * Set IndeterminateDrawable of  progressBar when refreshing.
      *
-     * @param refreshProgressIndeterminateDrawableResId refreshProgressIndeterminateDrawableResId
+     * @param id id
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshProgressIndeterminateDrawable(@DrawableRes int refreshProgressIndeterminateDrawableResId) {
-        setRefreshProgressIndeterminateDrawable(getResources().getDrawable(refreshProgressIndeterminateDrawableResId));
+    public NespRecyclerView setRefreshProgressIndeterminateDrawable(@DrawableRes int id) {
+        setRefreshProgressIndeterminateDrawable(ResourcesCompat.getDrawable(getResources(), id, null));
         return this;
     }
 
     /**
      * Set max finger swipe offset of stopping change layout height.
      *
-     * @param refreshMaxOffset refreshMaxOffset
+     * @param offset the max finger swipe offset of stopping change layout height
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshMaxOffset(float refreshMaxOffset) {
-        this.refreshMaxOffset = refreshMaxOffset;
+    public NespRecyclerView setRefreshMaxOffset(float offset) {
+        this.mRefreshMaxOffset = offset;
         return this;
     }
 
     /**
      * Set min finger swipe offset of starting change layout height.
      *
-     * @param refreshMinOffset refreshMinOffset
+     * @param offset the min finger swipe offset of starting change layout height
      * @return {@link NespRecyclerView}
      */
-    public NespRecyclerView setRefreshMinOffset(float refreshMinOffset) {
-        this.refreshMinOffset = refreshMinOffset;
+    public NespRecyclerView setRefreshMinOffset(float offset) {
+        this.mRefreshMinOffset = offset;
         return this;
     }
 
@@ -1552,12 +1625,12 @@ public class NespRecyclerView extends RecyclerView {
      * <b>Deprecated:</b>
      * It is recommended to use the default value
      *
-     * @param refreshRotateOffset refreshRotateOffset
+     * @param offset the min finger swipe offset of starting rotate arrow
      * @return {@link NespRecyclerView}
      */
     @Deprecated
-    public NespRecyclerView setRefreshRotateOffset(float refreshRotateOffset) {
-        this.refreshRotateOffset = refreshRotateOffset;
+    public NespRecyclerView setRefreshRotateOffset(float offset) {
+        this.mRefreshRotateOffset = offset;
         return this;
     }
 
@@ -1565,89 +1638,91 @@ public class NespRecyclerView extends RecyclerView {
      * Reset field prevents useless cached data after a one-cycle pull-down-to-refresh event
      */
     private void resetRefreshField() {
-        pointYDown = 0;
-        pointYMove = 0;
-        fingerSideOffset = 0;
-        viewSlideOffset = 0;
+        mPointYDown = 0;
+        mPointYMove = 0;
+        mFingerSideOffset = 0;
+        mViewSlideOffset = 0;
     }
 
     private int getLinearLayoutRefreshingHeight() {
-        imageViewRefreshArrow.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
-        textViewRefresh.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+        mImageViewRefreshArrow.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+        mTextViewRefresh.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
         //Calculate linearLayoutRefreshingHeight
-        return linearLayoutRefreshingHeight = Math.max(imageViewRefreshArrow.getHeight(), textViewRefresh.getHeight()) + 50;
+        return mLinearLayoutRefreshingHeight = Math.max(mImageViewRefreshArrow.getHeight(), mTextViewRefresh.getHeight()) + 50;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        isScrollTop = !canScrollVertically(-1);
+        mIsScrollTop = !canScrollVertically(-1);
 //        Log.e(TAG, "NespRecyclerView.onTouchEvent: \n" + isScrollTop);
-        if (!isRefreshEnable
-                || !isScrollTop
+        if (!mIsRefreshEnable
+                || !mIsScrollTop
                 || getScrollState() != SCROLL_STATE_DRAGGING
-                || loadMoreState == LoadMoreState.LOADING) return super.onTouchEvent(event);
+                || mLoadMoreState == LoadMoreState.LOADING) return super.onTouchEvent(event);
 
-        if (isRefreshing) return true;
+        if (mIsRefreshing) return true;
 
         int eventAction = event.getAction();
 
         if (eventAction == MotionEvent.ACTION_DOWN) {
-            hideView(progressBarRefresh);
-            pointYDown = event.getY();
-            isCalledActionDown = true;
+            hideView(mProgressBarRefresh);
+            mPointYDown = event.getY();
+            mIsCalledActionDown = true;
         }
 
         if (eventAction == MotionEvent.ACTION_MOVE) {
 
-            isCalledActionMove = true;
+            mIsCalledActionMove = true;
 
-            pointYMove = event.getY();
+            mPointYMove = event.getY();
 
-            if (!isCalledActionDown) {
-                hideView(progressBarRefresh);
-                pointYDown = pointYMove;
-                isCalledActionDown = true;
+            if (!mIsCalledActionDown) {
+                hideView(mProgressBarRefresh);
+                mPointYDown = mPointYMove;
+                mIsCalledActionDown = true;
             }
 
             //Customize Refresh View
-            imageViewRefreshArrow.setImageDrawable(refreshArrowDrawable);
-            imageViewRefreshArrow.getDrawable().setTint(refreshArrowTintColor);
+            mImageViewRefreshArrow.setImageDrawable(mRefreshArrowDrawable);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mImageViewRefreshArrow.getDrawable().setTint(mRefreshArrowTintColor);
+            }
 
-            fingerSideOffset = pointYMove - pointYDown;
-            viewSlideOffset = fingerSideOffset / 2;
+            mFingerSideOffset = mPointYMove - mPointYDown;
+            mViewSlideOffset = mFingerSideOffset / 2;
 
             //If over minRefreshOffset it will start to move downward
-            if (fingerSideOffset > refreshMinOffset) {
-                textViewRefresh.setText(pullDownText);
+            if (mFingerSideOffset > mRefreshMinOffset) {
+                mTextViewRefresh.setText(mPullDownText);
 
                 //If over maxRefreshOffset it will stop to move downward
-                if (refreshRotateOffset == -1)
+                if (mRefreshRotateOffset == -1)
                     //Set value from xml resource
-                    refreshRotateOffset = NespRecyclerView.this.getLinearLayoutRefreshingHeight() + 30;
+                    mRefreshRotateOffset = NespRecyclerView.this.getLinearLayoutRefreshingHeight() + 30;
 
-                if (viewSlideOffset > refreshRotateOffset) {
+                if (mViewSlideOffset > mRefreshRotateOffset) {
 
-                    textViewRefresh.setText(upToRefreshText);
-                    if (!isRefreshRowRotatedUp) {
-                        rotateView(imageViewRefreshArrow, true);
-                        isRefreshRowRotatedUp = true;
+                    mTextViewRefresh.setText(mUpToRefreshText);
+                    if (!mIsRefreshRowRotatedUp) {
+                        rotateView(mImageViewRefreshArrow, true);
+                        mIsRefreshRowRotatedUp = true;
                     }
                 } else {
-                    textViewRefresh.setText(pullDownText);
-                    if (isRefreshRowRotatedUp) {
-                        rotateView(imageViewRefreshArrow, false);
-                        isRefreshRowRotatedUp = false;
+                    mTextViewRefresh.setText(mPullDownText);
+                    if (mIsRefreshRowRotatedUp) {
+                        rotateView(mImageViewRefreshArrow, false);
+                        mIsRefreshRowRotatedUp = false;
                     }
                 }
 
-                if (viewSlideOffset <= refreshMaxOffset) {
-                    linearLayoutRefreshRootLayoutParams.height = (int) viewSlideOffset;
-                    linearLayoutRefreshRoot.setLayoutParams(linearLayoutRefreshRootLayoutParams);
+                if (mViewSlideOffset <= mRefreshMaxOffset) {
+                    mLlRefreshRootLayoutParams.height = (int) mViewSlideOffset;
+                    mLinearLayoutRefreshRoot.setLayoutParams(mLlRefreshRootLayoutParams);
                 }
 
-                linearLayoutRefreshRoot.setBackgroundColor(refreshBackgroundColor);
-            } else if (fingerSideOffset < 0) {
-                isCalledActionDown = false;
+                mLinearLayoutRefreshRoot.setBackgroundColor(mRefreshBackgroundColor);
+            } else if (mFingerSideOffset < 0) {
+                mIsCalledActionDown = false;
                 return super.onTouchEvent(event);
             } else {
                 return super.onTouchEvent(event);
@@ -1656,37 +1731,37 @@ public class NespRecyclerView extends RecyclerView {
 
         if (eventAction == MotionEvent.ACTION_UP) {
 //            Log.e(TAG, "NespRecyclerView.onTouchEvent: isCalledActionMove " + isCalledActionMove);
-            if (!isCalledActionMove) return super.onTouchEvent(event);
+            if (!mIsCalledActionMove) return super.onTouchEvent(event);
 
-            isCalledActionMove = false;
-            isCalledActionDown = false;
-            isScrollTop = false;
+            mIsCalledActionMove = false;
+            mIsCalledActionDown = false;
+            mIsScrollTop = false;
 
-            fingerSideOffset = pointYMove - pointYDown;
+            mFingerSideOffset = mPointYMove - mPointYDown;
 
             ValueAnimator valueAnimator = new ValueAnimator();
 
-            if (isRefreshRowRotatedUp) {
-                isRefreshRowRotatedUp = false;
-                isRefreshing = true;
-                showView(progressBarRefresh);
-                textViewRefresh.setText(refreshingText);
-                imageViewRefreshArrow.setImageDrawable(null);
+            if (mIsRefreshRowRotatedUp) {
+                mIsRefreshRowRotatedUp = false;
+                mIsRefreshing = true;
+                showView(mProgressBarRefresh);
+                mTextViewRefresh.setText(mRefreshingText);
+                mImageViewRefreshArrow.setImageDrawable(null);
 
-                rotateView(imageViewRefreshArrow, false);
+                rotateView(mImageViewRefreshArrow, false);
 
-                valueAnimator.setIntValues((int) viewSlideOffset, getLinearLayoutRefreshingHeight());
+                valueAnimator.setIntValues((int) mViewSlideOffset, getLinearLayoutRefreshingHeight());
                 valueAnimator.setInterpolator(new AnticipateOvershootInterpolator());
-                if (onRefreshListener != null) onRefreshListener.onRefresh();
+                if (mOnRefreshListener != null) mOnRefreshListener.onRefresh();
             } else {
-                valueAnimator.setIntValues((int) viewSlideOffset, linearLayoutInitHeight);
+                valueAnimator.setIntValues((int) mViewSlideOffset, mLlInitHeight);
             }
 
-            if (fingerSideOffset > 0) {
-                valueAnimator.setDuration((long) (viewSlideOffset));
+            if (mFingerSideOffset > 0) {
+                valueAnimator.setDuration((long) (mViewSlideOffset));
                 valueAnimator.addUpdateListener(animation -> {
-                    linearLayoutRefreshRootLayoutParams.height = (Integer) animation.getAnimatedValue();
-                    linearLayoutRefreshRoot.setLayoutParams(linearLayoutRefreshRootLayoutParams);
+                    mLlRefreshRootLayoutParams.height = (Integer) animation.getAnimatedValue();
+                    mLinearLayoutRefreshRoot.setLayoutParams(mLlRefreshRootLayoutParams);
                 });
                 valueAnimator.start();
             }
@@ -1701,18 +1776,19 @@ public class NespRecyclerView extends RecyclerView {
     /**
      * {@link #isScrollTop() , #isScrollBottom(), #isScrollUp(), #isScrollDown()}.
      * <p>
-     * Note:This variable uses a different judgment with {@link #onScrollListenerForLoadMore} to reach the bottom
+     * Note:This variable uses a different judgment with {@link #mOnScrollListenerForLoadMore} to reach the bottom
      */
     @Override
     public void onScrolled(int dx, int dy) {
-        isScrollTop = !canScrollVertically(-1);
-        isScrollBottom = !canScrollVertically(1);
-        isScrollUp = dy > 0;
-        isScrollDown = dy < 0;
+        mIsScrollTop = !canScrollVertically(-1);
+        mIsScrollBottom = !canScrollVertically(1);
+        mIsScrollUp = dy > 0;
+        mIsScrollDown = dy < 0;
     }
 
 //================================Adapter=======================================
 
+    @SuppressWarnings("rawtypes")
     public class NespRecyclerViewAdapter extends RecyclerView.Adapter<ViewHolder> {
 
         private final Adapter originAdapter;
@@ -1748,94 +1824,99 @@ public class NespRecyclerView extends RecyclerView {
             switch (viewType) {
 
                 case ITEM_TYPE_REFRESH_HEADER:
-                    refreshHeaderView = LayoutInflater.from(context).inflate(R.layout.nesprecyclerview_header_refresh_content, parent, false);
-                    linearLayoutRefreshRoot = refreshHeaderView.findViewById(R.id.nrv_header_refresh_root);
-                    textViewRefresh = refreshHeaderView.findViewById(R.id.nrv_header_refresh_tv);
-                    imageViewRefreshArrow = refreshHeaderView.findViewById(R.id.nrv_header_refresh_iv);
-                    progressBarRefresh = refreshHeaderView.findViewById(R.id.nrv_header_refresh_pb);
-                    linearLayoutRefreshRootLayoutParams = (LinearLayout.LayoutParams) linearLayoutRefreshRoot.getLayoutParams();
+                    mRefreshHeaderView = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.nesprecyclerview_header_refresh_content, parent, false);
+                    mLinearLayoutRefreshRoot = mRefreshHeaderView.findViewById(R.id.nrv_header_refresh_root);
+                    mTextViewRefresh = mRefreshHeaderView.findViewById(R.id.nrv_header_refresh_tv);
+                    mImageViewRefreshArrow = mRefreshHeaderView.findViewById(R.id.nrv_header_refresh_iv);
+                    mProgressBarRefresh = mRefreshHeaderView.findViewById(R.id.nrv_header_refresh_pb);
+                    mLlRefreshRootLayoutParams = (LinearLayout.LayoutParams) mLinearLayoutRefreshRoot.getLayoutParams();
 
                     /*
                     Customize for refresh
                      */
-                    textViewRefresh.setTextColor(refreshTextColor);
-                    textViewRefresh.setTextSize(refreshTextSize);
+                    mTextViewRefresh.setTextColor(mRefreshTextColor);
+                    mTextViewRefresh.setTextSize(mRefreshTextSize);
 
-                    if (refreshProgressIndeterminateDrawable != null) {
-                        progressBarRefresh.setIndeterminateDrawable(refreshProgressIndeterminateDrawable);
+                    if (mRefreshProgressIndeterminateDrawable != null) {
+                        mProgressBarRefresh.setIndeterminateDrawable(mRefreshProgressIndeterminateDrawable);
                     }
 
-                    if (refreshProgressIndeterminateDrawableTintColor != 0) {
-                        progressBarRefresh.getIndeterminateDrawable().setTint(refreshProgressIndeterminateDrawableTintColor);
+                    if (mRefreshProgressIndeterminateDrawableTintColor != 0) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            mProgressBarRefresh.getIndeterminateDrawable().setTint(mRefreshProgressIndeterminateDrawableTintColor);
+                        }
                     }
 
-                    return new NespRecyclerViewViewHolder(refreshHeaderView);
+                    return new NespRecyclerViewViewHolder(mRefreshHeaderView);
                 case ITEM_TYPE_HEADER:
-                    return new NespRecyclerViewViewHolder(headerView);
+                    return new NespRecyclerViewViewHolder(mHeaderView);
                 case ITEM_TYPE_EMPTY: {
-                    if (emptyDrawable != null) {
+                    if (mEmptyDrawable != null) {
                         try {
-                            ((ImageView) emptyView.findViewById(R.id.nrcv_empty_iv))
-                                    .setImageDrawable(emptyDrawable);
+                            ((ImageView) mEmptyView.findViewById(R.id.nrcv_empty_iv))
+                                    .setImageDrawable(mEmptyDrawable);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
 
-                    if (emptyText != null && !emptyText.isEmpty()) {
+                    if (mEmptyText != null && !mEmptyText.isEmpty()) {
                         try {
-                            ((TextView) emptyView.findViewById(R.id.nrcv_empty_tv))
-                                    .setText(emptyText);
+                            ((TextView) mEmptyView.findViewById(R.id.nrcv_empty_tv))
+                                    .setText(mEmptyText);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
 
-                    return new NespRecyclerViewViewHolder(emptyView);
+                    return new NespRecyclerViewViewHolder(mEmptyView);
                 }
                 case ITEM_TYPE_FOOTER:
-                    return new NespRecyclerViewViewHolder(footerView);
+                    return new NespRecyclerViewViewHolder(mFooterView);
                 case ITEM_TYPE_LOAD_MORE:
-                    loadMoreView = LayoutInflater.from(getContext())
+                    mLoadMoreView = LayoutInflater.from(getContext())
                             .inflate(R.layout.nesprecyclerview_load_more, parent, false);
 
                     /*
                      *  Customize the loadMoreView
                      */
-                    loadMoreView.setBackgroundColor(loadMoreBackgroundColor);
-                    pbLoadMore = loadMoreView.findViewById(R.id.nrv_load_more_pb);
-                    if (loadMoreProgressIndeterminateDrawable != null) {
-                        pbLoadMore.setIndeterminateDrawable(loadMoreProgressIndeterminateDrawable);
+                    mLoadMoreView.setBackgroundColor(mLoadMoreBackgroundColor);
+                    mPbLoadMore = mLoadMoreView.findViewById(R.id.nrv_load_more_pb);
+                    if (mLoadMoreProgressIndeterminateDrawable != null) {
+                        mPbLoadMore.setIndeterminateDrawable(mLoadMoreProgressIndeterminateDrawable);
                     }
 
-                    if (loadMoreProgressIndeterminateDrawableTintColor != 0) {
-                        pbLoadMore.getIndeterminateDrawable().setTint(loadMoreProgressIndeterminateDrawableTintColor);
+                    if (mLoadMoreProgressIndeterminateDrawableTintColor != 0) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            mPbLoadMore.getIndeterminateDrawable().setTint(mLoadMoreProgressIndeterminateDrawableTintColor);
+                        }
                     }
-                    tvLoadMoreText = loadMoreView.findViewById(R.id.nrv_load_more_tv);
-                    tvLoadMoreText.setTextSize(loadMoreTextSize);
-                    tvLoadMoreText.setTextColor(loadMoreTextColor);
-                    tvLoadMoreText.setText(loadingMoreDataText);
+                    mTvLoadMoreText = mLoadMoreView.findViewById(R.id.nrv_load_more_tv);
+                    mTvLoadMoreText.setTextSize(mLoadMoreTextSize);
+                    mTvLoadMoreText.setTextColor(mLoadMoreTextColor);
+                    mTvLoadMoreText.setText(mLoadingMoreDataText);
 
                     //Click to reload data if load more failed
-                    loadMoreView.setOnClickListener(v -> {
-                        if (loadMoreState != LoadMoreState.LOAD_FAILED) return;
-                        loadMoreState = LoadMoreState.LOADING;
-                        tvLoadMoreText.setText(loadingMoreDataText);
-                        showView(tvLoadMoreText);
-                        showView(pbLoadMore);
-                        if (onLoadMoreListener != null) onLoadMoreListener.onLoadMore();
+                    mLoadMoreView.setOnClickListener(v -> {
+                        if (mLoadMoreState != LoadMoreState.LOAD_FAILED) return;
+                        mLoadMoreState = LoadMoreState.LOADING;
+                        mTvLoadMoreText.setText(mLoadingMoreDataText);
+                        showView(mTvLoadMoreText);
+                        showView(mPbLoadMore);
+                        if (mOnLoadMoreListener != null) mOnLoadMoreListener.onLoadMore();
                     });
 
                     //when remove footerView will trigger onCreateViewHolder()
-                    if (!TextUtils.isEmpty(lastPbTvLoadMoreTextTemp)) {
-                        tvLoadMoreText.setText(lastPbTvLoadMoreTextTemp);
-                        pbLoadMore.setVisibility(lastPbLoadMoreVisibilityTemp);
+                    if (!TextUtils.isEmpty(mLastPbTvLoadMoreTextTemp)) {
+                        mTvLoadMoreText.setText(mLastPbTvLoadMoreTextTemp);
+                        mPbLoadMore.setVisibility(mLastPbLoadMoreVisibilityTemp);
                     }
 
                     if (mLoadMoreInflateListener != null) {
                         mLoadMoreInflateListener.onLoadMoreInflated();
                     }
-                    return new NespRecyclerViewViewHolder(loadMoreView);
+                    return new NespRecyclerViewViewHolder(mLoadMoreView);
                 default:
                     return originAdapter.onCreateViewHolder(parent, viewType);
             }
@@ -1843,6 +1924,7 @@ public class NespRecyclerView extends RecyclerView {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             int realPosition = getRealItemPosition(position);
             int type = getItemViewType(position);
@@ -1856,8 +1938,8 @@ public class NespRecyclerView extends RecyclerView {
             }
 
             holder.itemView.setOnClickListener(v -> {
-                if (onContentItemClickListener != null)
-                    onContentItemClickListener.onContentItemClick(holder, realPosition);
+                if (mOnContentItemClickListener != null)
+                    mOnContentItemClickListener.onContentItemClick(holder, realPosition);
             });
 
             originAdapter.onBindViewHolder(holder, realPosition);
@@ -1876,22 +1958,22 @@ public class NespRecyclerView extends RecyclerView {
              */
 
             //Add RefreshHeaderView
-            if (isRefreshEnable)
+            if (mIsRefreshEnable)
                 itemCount++;
             //Add HeaderView
-            if (headerView != null) itemCount++;
+            if (mHeaderView != null) itemCount++;
             //Add FooterView
-            if (footerView != null) itemCount++;
+            if (mFooterView != null) itemCount++;
             //Add EmptyView
-            if (emptyView != null && originItemCount == 0) {
+            if (mEmptyView != null && originItemCount == 0) {
                 itemCount++;
                 //If the content data is empty,no need to add LoadMoreView
                 return itemCount;
             }
             //Add LoadMoreView
-            if (loadMoreState != LoadMoreState.LOAD_NOT
-                    && loadMoreEnable
-                    && originItemCount >= maxScreenItems
+            if (mLoadMoreState != LoadMoreState.LOAD_NOT
+                    && mLoadMoreEnable
+                    && originItemCount >= mMaxScreenItems
             ) itemCount++;
             return itemCount;
         }
@@ -1901,17 +1983,17 @@ public class NespRecyclerView extends RecyclerView {
             /*
              * The order of the view is very important to be cautiously modified, otherwise it will be confused and return wrong type.
              */
-            if (isRefreshEnable && position == 0) return ITEM_TYPE_REFRESH_HEADER;
-            if (headerView != null && position == (refreshHeaderView == null ? 0 : 1))
+            if (mIsRefreshEnable && position == 0) return ITEM_TYPE_REFRESH_HEADER;
+            if (mHeaderView != null && position == (mRefreshHeaderView == null ? 0 : 1))
                 return ITEM_TYPE_HEADER;
-            if (footerView != null && position == getItemCount() - 1) return ITEM_TYPE_FOOTER;
-            if (emptyView != null && originAdapter.getItemCount() == 0) {
+            if (mFooterView != null && position == getItemCount() - 1) return ITEM_TYPE_FOOTER;
+            if (mEmptyView != null && originAdapter.getItemCount() == 0) {
                 //If the content data is empty,no need to add LoadMoreView
                 return ITEM_TYPE_EMPTY;
-            } else if (loadMoreState != LoadMoreState.LOAD_NOT
+            } else if (mLoadMoreState != LoadMoreState.LOAD_NOT
                     && position == getLoadMorePosition()
-                    && loadMoreEnable
-                    && originAdapter.getItemCount() >= maxScreenItems
+                    && mLoadMoreEnable
+                    && originAdapter.getItemCount() >= mMaxScreenItems
             ) {
                 return ITEM_TYPE_LOAD_MORE;
             }
@@ -1926,11 +2008,11 @@ public class NespRecyclerView extends RecyclerView {
          */
         private int getRealItemPosition(int position) {
 
-            if (refreshHeaderView != null) {
+            if (mRefreshHeaderView != null) {
                 position--;
             }
 
-            if (headerView != null) {
+            if (mHeaderView != null) {
                 position--;
             }
 
@@ -2042,7 +2124,7 @@ public class NespRecyclerView extends RecyclerView {
          * @return the loadMore position
          */
         private int getLoadMorePosition() {
-            if (footerView == null) {
+            if (mFooterView == null) {
                 return getItemCount() - 1;
             } else {
                 return getItemCount() - 2;
@@ -2092,7 +2174,7 @@ public class NespRecyclerView extends RecyclerView {
      */
     public View inflateView(int layoutRes) {
         if (layoutRes == -1) return null;
-        return LayoutInflater.from(context).inflate(layoutRes, NespRecyclerView.this, false);
+        return LayoutInflater.from(getContext()).inflate(layoutRes, NespRecyclerView.this, false);
     }
 
     private void showView(View view) {
