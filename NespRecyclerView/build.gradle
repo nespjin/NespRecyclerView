@@ -16,18 +16,24 @@
 
 apply plugin: 'com.android.library'
 
+def artifactGroup = "com.nesp.sdk.android.widget"
+def artifactVersionCode = 2
+def artifactVersionName = "0.1.0"
+
+group artifactGroup
+version artifactVersionName
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace 'com.nesp.sdk.android.widget'
+        namespace artifactGroup
     }
     compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 2
-        versionName "0.1.0"
+        versionCode artifactVersionCode
+        versionName artifactVersionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

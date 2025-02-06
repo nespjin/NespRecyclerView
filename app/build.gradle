@@ -18,9 +18,13 @@ apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
 
-apply plugin: 'kotlin-android-extensions'
+// apply plugin: 'kotlin-android-extensions'
 
 android {
+    if (project.android.hasProperty("namespace")) {
+        namespace "com.nesp.demo.nesprecylerviewdemo"
+    }
+
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.nesp.demo.nesprecylerviewdemo"
