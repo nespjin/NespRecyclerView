@@ -16,6 +16,8 @@
 
 apply plugin: 'com.android.library'
 
+group = "com.nesp.sdk.android.widget"
+version = "0.1.0"
 
 android {
     if (project.android.hasProperty("namespace")) {
